@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b23f08d2ae4cba14087c1ed36193d82b, type: 3}
+  m_Name: EnemyBehavior
+  m_EditorClassIdentifier: 
+  mBehaviorSource:
+    behaviorName: EnemyBehavior
+    behaviorDescription: "\u654C\u4EBA\u7684\u884C\u4E3A\u6811"
+    mTaskData:
+      types: []
+      parentIndex: 
+      startIndex: 
+      variableStartIndex: 
+      JSONSerialization: '{"EntryTask":{"Type":"BehaviorDesigner.Runtime.Tasks.EntryTask","NodeData":{"Offset":"(643.290955,18.37209)"},"ID":0,"Name":"Entry","Instant":true},"RootTask":{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(3.29095459,108.37207)"},"ID":1,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(-96.2499847,130)"},"ID":2,"Name":"Sequence","Instant":true,"AbortTypeabortType":"LowerPriority","Children":[{"Type":"CanSeeObject","NodeData":{"Offset":"(-52.5852432,159.777)"},"ID":3,"Name":"Can
+        See Object","Instant":true,"GameObject[]targets":[],"SingleangleLimit":90,"SingledistanceLimit":50,"SinglediscoverInterval":2,"LayerMaskobstructionLayerMask":87},{"Type":"Attack","NodeData":{"Offset":"(70,160)"},"ID":4,"Name":"Attack","Instant":true,"SinglemaxAttackDistabce":50,"SinglerotationSpeed":0.2,"GameObject[]targets":[],"EnemyWeaponControlm_EnemyWeaponController":0,"LayerMaskobstructionLayerMask":119,"SinglediscoverInterval":2,"SingleshootInterval":5}]},{"Type":"FlyPatrol","NodeData":{"Offset":"(80,130)"},"ID":5,"Name":"Fly
+        Patrol","Instant":true,"List`1patrolPoints":[1,2],"SinglepointDistanceLimit":1,"Singlespeed":5,"SinglerotationSpeed":0.2}]},"DetachedTasks":[{"Type":"BehaviorDesigner.Runtime.Tasks.Parallel","NodeData":{"Offset":"(150,140)"},"ID":6,"Name":"Parallel","Instant":true,"AbortTypeabortType":"None"},{"Type":"BehaviorDesigner.Runtime.Tasks.HasEnteredCollision","NodeData":{"Offset":"(100,360)"},"ID":7,"Name":"Has
+        Entered Collision","Instant":true,"SharedStringtag":{"Type":"BehaviorDesigner.Runtime.SharedString","Name":null,"StringmValue":""},"SharedGameObjectcollidedGameObject":{"Type":"BehaviorDesigner.Runtime.SharedGameObject","Name":null}},{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(250,420)"},"ID":8,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.HasEnteredTrigger","NodeData":{"Offset":"(-272.790741,281.6279)"},"ID":9,"Name":"Has
+        Entered Trigger","Instant":true,"SharedStringtag":{"Type":"BehaviorDesigner.Runtime.SharedString","Name":null,"StringmValue":""},"SharedGameObjectotherGameObject":{"Type":"BehaviorDesigner.Runtime.SharedGameObject","Name":null}},{"Type":"BehaviorDesigner.Runtime.Tasks.HasEnteredCollision","NodeData":{"Offset":"(-97.0865,279.421753)"},"ID":10,"Name":"Has
+        Entered Collision","Instant":true,"SharedStringtag":{"Type":"BehaviorDesigner.Runtime.SharedString","Name":null,"StringmValue":""},"SharedGameObjectcollidedGameObject":{"Type":"BehaviorDesigner.Runtime.SharedGameObject","Name":null}}]},{"Type":"FindObject","NodeData":{"Offset":"(950,470)"},"ID":11,"Name":"Find
+        Object","Instant":true,"SingledistanceLimit":2},{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(290,140)"},"ID":12,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None"}]}'
+      fieldSerializationData:
+        typeName: []
+        fieldNameHash: 
+        startIndex: 
+        dataPosition: 
+        unityObjects:
+        - {fileID: 0}
+        - {fileID: 0}
+        - {fileID: 0}
+        byteData: 
+        byteDataArray: 
+      Version: 1.6.8

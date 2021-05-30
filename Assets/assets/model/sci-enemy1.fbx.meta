@@ -1,0 +1,204 @@
+fileFormatVersion: 2
+guid: 545b3aea993fdb146971fc7fc9621a4d
+ModelImporter:
+  serializedVersion: 20200
+  internalIDToNameTable:
+  - first:
+      74: 6492965156665845704
+    second: RifleAimShoot
+  - first:
+      74: -5899650854701679063
+    second: Climb
+  - first:
+      74: 5814987401377882697
+    second: RifleAim
+  - first:
+      74: -5743728226222506465
+    second: RifleIdle
+  - first:
+      74: 8581503646847561147
+    second: RifleJump
+  - first:
+      74: -4795666461400094628
+    second: RifleReload
+  - first:
+      74: -8350895242887599740
+    second: RifleRun
+  - first:
+      74: -6284621742503356237
+    second: RifleIdlePatorl
+  - first:
+      74: -2702400367771620057
+    second: InAir
+  - first:
+      74: -7152371711416502962
+    second: FlyForward
+  - first:
+      74: -4221137046474473388
+    second: FlyRight
+  - first:
+      74: -4122978821691868794
+    second: FlyLeft
+  - first:
+      74: 1618094417378578758
+    second: SniperAimShoot
+  - first:
+      74: 3321488554556644972
+    second: SniperAim
+  - first:
+      74: -1971526240542987525
+    second: RifleAimIdle
+  - first:
+      74: -4921448112874259582
+    second: RifleIdleShoot
+  - first:
+      74: 4607473020767658750
+    second: RifleIdleWalk
+  - first:
+      74: -2627272658934743814
+    second: RifleIdleWalk1
+  - first:
+      74: -5741333778414511587
+    second: metarig|Climb
+  - first:
+      74: -7152920224282662973
+    second: metarig|FlyForward
+  - first:
+      74: 769611026701119408
+    second: metarig|FlyLeft
+  - first:
+      74: 3206195325868196182
+    second: metarig|FlyLeft.001
+  - first:
+      74: 3400861572126706611
+    second: metarig|FlyRight
+  - first:
+      74: 97385836683291837
+    second: metarig|InAir
+  - first:
+      74: -4128994325673832963
+    second: metarig|RifleAim
+  - first:
+      74: 8791241421922931184
+    second: metarig|RifleAimIdle
+  - first:
+      74: -8479858503492168685
+    second: metarig|RifleIdle
+  - first:
+      74: 8735141808739289398
+    second: metarig|RifleIdlePatorl
+  - first:
+      74: -8502977431518171126
+    second: metarig|RifleIdleWalk
+  - first:
+      74: -993450108457839710
+    second: metarig|RifleIdleWalk1
+  - first:
+      74: -5336886473253533744
+    second: metarig|RifleJump
+  - first:
+      74: -8706194484524162100
+    second: metarig|RifleReload
+  - first:
+      74: -6126100966486837250
+    second: metarig|SniperAim
+  - first:
+      74: 5629646623894013680
+    second: metarig|SniperAimShoot
+  externalObjects: {}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 1
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
