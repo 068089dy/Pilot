@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,10 +11,12 @@ public class OperationRay : MonoBehaviour
     public float rayLength = 5;
 
     public Image loadingBar;
-    public Text hintText;
-
+    //public Text hintText;
+    public TMP_Text hintTextMesh;
+    public Actor actor;
     Operation lastHitOperation;
 
+    public PlayerStateManager playerStateManager;
 
     bool canInput;
     // Start is called before the first frame update
@@ -25,56 +28,71 @@ public class OperationRay : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, rayLength, operateLayerMask, QueryTriggerInteraction.Ignore))
+        if (playerStateManager.curState == PlayerState.PLAYER_CONTROL)
         {
-            Operation operation = hit.transform.gameObject.GetComponent<Operation>();
-            if (operation)
+            if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, rayLength, operateLayerMask, QueryTriggerInteraction.Ignore))
             {
-                showOperateHint();
-                hintText.text = operation.hint;
-                //Debug.Log(operation.hint);
-                if (operation.type == 1)
+                //Debug.Log(Time.time + "opreation");
+                Operation operation = hit.transform.gameObject.GetComponent<Operation>();
+                if (operation &&
+                    (operation.parentActor.team == Team.NOTEAM ||
+                    operation.parentActor.team == actor.team)
+                    )
                 {
-                    if (inputHandler.GetOperateInputDown())
+                    showOperateHint();
+                    //hintText.text = operation.hint;
+                    hintTextMesh.text = operation.hint;
+                    // 点按操作
+                    if (operation.type == 1)
                     {
-                        operation.Operate();
-                    }
-                } else if (operation.type == 2)
-                {
-                    if (inputHandler.GetOperateInputHeld() && canInput)
-                    {
-                        if (operation.curPrepareTime <= operation.prepareDuration)
+                        if (inputHandler.GetOperateInputDown())
                         {
-                            operation.curPrepareTime += Time.deltaTime;
-                            loadingBar.fillAmount = operation.curPrepareTime / operation.prepareDuration;
-                        } else
-                        {
-                            operation.curPrepareTime = 0;
-                            loadingBar.fillAmount = 0;
-                            canInput = false;
-                            operation.Operate();
-                            
+                            operation.Operate(actor);
+                            playerStateManager.curState = PlayerState.DRIVING;
+                            hideOperateHint();
                         }
                     }
-                    if (inputHandler.GetOperateInputRelease())
+                    else if (operation.type == 2)
                     {
-                        canInput = true;
-                        operation.curPrepareTime = 0;
-                        loadingBar.fillAmount = 0;
+                        // 长按操作
+                        if (inputHandler.GetOperateInputHeld() && canInput)
+                        {
+                            if (operation.curPrepareTime <= operation.prepareDuration)
+                            {
+                                operation.curPrepareTime += Time.deltaTime;
+                                loadingBar.fillAmount = operation.curPrepareTime / operation.prepareDuration;
+                            }
+                            else
+                            {
+                                operation.curPrepareTime = 0;
+                                loadingBar.fillAmount = 0;
+                                canInput = false;
+                                operation.Operate(actor);
+
+                            }
+                        }
+                        if (inputHandler.GetOperateInputRelease())
+                        {
+                            canInput = true;
+                            operation.curPrepareTime = 0;
+                            loadingBar.fillAmount = 0;
+                        }
                     }
+                    lastHitOperation = operation;
                 }
-                lastHitOperation = operation;
-            } else
+                else
+                {
+                    canInput = true;
+                    hideOperateHint();
+                }
+            }
+            else
             {
                 canInput = true;
-                hideOperateHint();
-            }
-        } else
-        {
-            canInput = true;
-            if (lastHitOperation)
-            {
-                hideOperateHint();
+                if (lastHitOperation)
+                {
+                    hideOperateHint();
+                }
             }
         }
     }
@@ -82,14 +100,15 @@ public class OperationRay : MonoBehaviour
     void showOperateHint()
     {
         loadingBar.enabled = true;
-        hintText.enabled = true;
-        
+        //hintText.enabled = true;
+        hintTextMesh.enabled = true;
     }
 
     void hideOperateHint()
     {
         loadingBar.enabled = false;
-        hintText.enabled = false;
+        //hintText.enabled = false;
+        hintTextMesh.enabled = false;
         loadingBar.fillAmount = 0;
     }
 }

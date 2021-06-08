@@ -44,11 +44,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c671c3a76f31d4748be9190d5fb6b0cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shotSpeed: 300
+  shotSpeed: 200
   maxLifeTime: 5
   damage: 15
   lastFramePos: {x: 0, y: 0, z: 0}
   HitFXPrefab: {fileID: 2306767380797635144, guid: 5d0b5fb5078aafb429ae782f3f7c7284, type: 3}
+  hitFxLifeTime: 0.3
 --- !u!1001 &9196367840445718355
 PrefabInstance:
   m_ObjectHideFlags: 0

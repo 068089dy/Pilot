@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public class InputHandler : MonoBehaviour
 {
+    public float mouseSensitivity = 4f;
     // 用来记录上一帧是否按住开火键
     bool m_FireInputWasHeld;
     bool m_OperateInputWasHeld;
@@ -56,6 +58,11 @@ public class InputHandler : MonoBehaviour
 
     // 弹群
     public bool GetMissileBatchInputDown()
+    {
+        return Input.GetKeyDown(KeyCode.V);
+    }
+
+    public bool GetUltimateSkillInputDown()
     {
         return Input.GetKeyDown(KeyCode.Q);
     }

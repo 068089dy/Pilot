@@ -99,10 +99,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 50
   trail: {fileID: 7779388513035325209}
-  lifeTime: 10
-  rotationSpeed: 0.3
+  targetActor: {fileID: 0}
+  lifeTime: 100
+  rotationSpeed: 0.2
   centralInjury: 100
   explosionRange: 6
+  damageLoss: 10
   ExplosionFXPrefab: {fileID: 1290715649332758, guid: 587eaecaa621be74486f351c78b4f0a8, type: 3}
   launchSFX: {fileID: 8300000, guid: 3bc649f38f847974092ec85647f81580, type: 3}
 --- !u!82 &6227626097951418371

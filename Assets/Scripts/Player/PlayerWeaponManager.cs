@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using RootMotion.FinalIK;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(InputHandler))]
 [RequireComponent(typeof(PlayerAnimationManager))]
@@ -11,11 +12,11 @@ public class PlayerWeaponManager : MonoBehaviour
 {
     
     [SerializeField]
-    public List<weaponMsg> weaponList;
+    public List<WeaponMsg> weaponList;
     [NonSerialized]
     public int curWeaponIndex;
     //[NonSerialized]
-    public weaponMsg curWeaponMsg;
+    public WeaponMsg curWeaponMsg;
     [NonSerialized]
     public GameObject curWeapon;
 
@@ -24,6 +25,7 @@ public class PlayerWeaponManager : MonoBehaviour
     InputHandler m_InputHandler;
     PlayerAnimationManager m_PlayerAnimationManager;
     PlayerCharacterController m_PlayerCharacterController;
+    PlayerStateManager playerStateManager;
 
     [NonSerialized]
     public bool isAiming;
@@ -40,6 +42,7 @@ public class PlayerWeaponManager : MonoBehaviour
         m_PlayerAnimationManager = GetComponent<PlayerAnimationManager>();
         m_PlayerCharacterController = GetComponent<PlayerCharacterController>();
         m_InputHandler = GetComponent<InputHandler>();
+        playerStateManager = GetComponent<PlayerStateManager>();
         setWeapon(0);
         
     }
@@ -47,27 +50,31 @@ public class PlayerWeaponManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (m_InputHandler.GetSwitchWeaponInput() != 0)
+        if (playerStateManager.curState == PlayerState.PLAYER_CONTROL)
         {
-            //Debug.Log("»»Ç¹");
-            setWeapon(m_InputHandler.GetSwitchWeaponInput() + curWeaponIndex);
-        }
-        if (m_InputHandler.GetAimInputDown())
-        {
-            if (isAiming)
+            if (m_InputHandler.GetSwitchWeaponInput() != 0)
             {
-                isAiming = false;
-            } else
-            {
-                isAiming = true;
+                //Debug.Log("»»Ç¹");
+                setWeapon(m_InputHandler.GetSwitchWeaponInput() + curWeaponIndex);
             }
+            if (m_InputHandler.GetAimInputDown())
+            {
+                if (isAiming)
+                {
+                    isAiming = false;
+                }
+                else
+                {
+                    isAiming = true;
+                }
+            }
+            HandleAimCamera();
+            if (!isHiting)
+            {
+                HandleShoot();
+            }
+            HandleMeleeAttack();
         }
-        HandleAimCamera();
-        if (!isHiting)
-        {
-            HandleShoot();
-        }
-        HandleMeleeAttack();
     }
 
     void HandleMeleeAttack()
@@ -104,28 +111,32 @@ public class PlayerWeaponManager : MonoBehaviour
         {
             if (m_InputHandler.GetFireInputHeld())
             {
-                if (curWeaponMsg.body.GetComponent<WeaponRifle>().curMagazineNum > 0)
+                if (curWeaponMsg.weaponController.curMagazineNum > 0)
                 {
                     isShooting = true;
                     isLoading = false;
-                    curWeaponMsg.body.GetComponent<WeaponRifle>().Shoot();
+                    curWeaponMsg.weaponController.Shoot();
                     //curWeapon.GetComponent<WeaponRifle>().StopReload();
                 } else
                 {
                     isShooting = false;
+                    isLoading = true;
                 }
             } else
             {
                 isShooting = false;
             }
-
+            if (m_InputHandler.GetRunInputDown())
+            {
+                isLoading = false;
+            }
         } else if (curWeaponIndex == 1)
         {
-            if (m_InputHandler.GetFireInputDown() && curWeaponMsg.body.GetComponent<WeaponSniper>().loadingProgress >= 1)
+            if (m_InputHandler.GetFireInputDown() && curWeaponMsg.weaponController.GetComponent<WeaponSniper>().loadingProgress >= 1)
             {
                 //isAiming = false;
                 isShooting = true;
-                curWeaponMsg.body.GetComponent<WeaponSniper>().Shoot();
+                curWeaponMsg.weaponController.Shoot();
             } else
             {
                 isShooting = false;
@@ -162,12 +173,12 @@ public class PlayerWeaponManager : MonoBehaviour
 
     }
 
-    IEnumerator EnableSniperCameraDelay(float waitTime)
-    {
-        yield return new WaitForSeconds(waitTime);
-        m_PlayerCharacterController.fpCamera.fieldOfView = 20;
-        m_PlayerCharacterController.fpCamera.nearClipPlane = 2;
-    }
+    //IEnumerator EnableSniperCameraDelay(float waitTime)
+    //{
+    //    yield return new WaitForSeconds(waitTime);
+    //    m_PlayerCharacterController.fpCamera.fieldOfView = 20;
+    //    m_PlayerCharacterController.fpCamera.nearClipPlane = 2;
+    //}
 
     public void setWeapon(int index)
     {
@@ -181,7 +192,7 @@ public class PlayerWeaponManager : MonoBehaviour
         }
         curWeaponIndex = index;
 
-        foreach (weaponMsg w in weaponList)
+        foreach (WeaponMsg w in weaponList)
         {
             if (w.index == index)
             {
@@ -204,9 +215,9 @@ public class PlayerWeaponManager : MonoBehaviour
         //disablecurWeapon();
     }
 
-    void enableNewWeapon(weaponMsg cweaponMsg)
+    void enableNewWeapon(WeaponMsg cweaponMsg)
     {
-        cweaponMsg.body.GetComponent<WeaponController>().EnableWeapon();
+        cweaponMsg.weaponController.EnableWeapon();
         setWeaponIK(cweaponMsg.index);
         m_PlayerAnimationManager.SetLayerEnable(cweaponMsg.animatorLayer);
         isAiming = false;
@@ -216,21 +227,21 @@ public class PlayerWeaponManager : MonoBehaviour
         m_PlayerAnimationManager.Idle();
     }
 
-    void disableWeapon(weaponMsg cweaponMsg)
+    void disableWeapon(WeaponMsg cweaponMsg)
     {
-        cweaponMsg.body.GetComponent<WeaponController>().DisableWeapon();
+        cweaponMsg.weaponController.DisableWeapon();
     }
 
     void disablecurWeapon()
     {
         //curWeaponMsg.body.SetActive(false);
-        curWeaponMsg.body.GetComponent<WeaponController>().DisableWeapon();
+        curWeaponMsg.weaponController.DisableWeapon();
     }
 
     void setWeaponIK(int index)
     {
 
-        foreach (weaponMsg w in weaponList)
+        foreach (WeaponMsg w in weaponList)
         {
             if (w.index == index)
             {
@@ -248,13 +259,16 @@ public class PlayerWeaponManager : MonoBehaviour
 }
 
 [Serializable]
-public class weaponMsg
+public class WeaponMsg
 {
     public int index;
+    
     public int animatorLayer;
     public string name;
     public Transform leftHandPose;
-    public GameObject body;
+    public WeaponController weaponController;
+    public Sprite icon;
+    //public GameObject body;
 }
 
 class AnimatorLayer

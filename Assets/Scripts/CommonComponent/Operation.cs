@@ -23,6 +23,7 @@ public class Operation : MonoBehaviour
     // 类型为2时，需要按下多长时间才调用Opreate
     public float prepareDuration = 1;
     public float curPrepareTime;
+    public Actor parentActor;
 
 
     // Start is called before the first frame update
@@ -37,10 +38,7 @@ public class Operation : MonoBehaviour
         
     }
 
-
-    
-
-    public virtual void Operate()
+    public virtual void Operate(Actor actor)
     {
     }
 }

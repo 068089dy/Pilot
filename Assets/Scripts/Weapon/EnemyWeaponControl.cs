@@ -12,6 +12,7 @@ public class EnemyWeaponControl : MonoBehaviour
     public ProjectileBase projectilePrefab;
     public AudioClip shootSFX;
     public AudioSource audioSource;
+    public Actor owner;
     
     // Start is called before the first frame update
     void Start()
@@ -33,6 +34,7 @@ public class EnemyWeaponControl : MonoBehaviour
             
             ProjectileBase projectileBase = Instantiate(projectilePrefab, weaponMuzzle.position, Quaternion.LookRotation(shotDir));
             //projectileBase.parentWeaponController = this;
+            projectileBase.owner = owner;
             projectileBase.bulletLayerMask = shotLayermask;
             audioSource.PlayOneShot(shootSFX);
         }

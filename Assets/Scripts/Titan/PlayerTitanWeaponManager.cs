@@ -8,6 +8,7 @@ using UnityEngine.Events;
 [RequireComponent(typeof(TitanAnimationController))]
 [RequireComponent(typeof(PlayerTitanController))]
 [RequireComponent(typeof(TitanStateManager))]
+[DisallowMultipleComponent]
 public class PlayerTitanWeaponManager : MonoBehaviour
 {
     InputHandler m_InputHandler;

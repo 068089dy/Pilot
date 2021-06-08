@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,56 +6,41 @@ using UnityEngine;
 
 public class Damagable : MonoBehaviour
 {
-    public Transform DamagePoint;
-    // 最近一次被打的时间
-    [System.NonSerialized]
-    public float lastBeHurtTime;
-
-    // 最近一次被谁打的
-    [System.NonSerialized]
-    public GameObject lastBeHurtObject;
-    public Health health;
+    public Actor parentActor;
     // 暴击倍率（爆头伤害等）
     public int critRate = 1;
 
-    public bool BeHurt(int amount)
+
+    public void Start()
     {
-        lastBeHurtTime = Time.time;
-        if (health)
-        {
-            health.hp -= amount * critRate;
-            return true;
-        }
-        return false;
+        gameObject.layer = LayerMask.NameToLayer(parentActor.hitLayer);
+        parentActor.setLayerAction += setLayer;
+    }
+
+    void setLayer()
+    {
+        Debug.Log("设置层" + parentActor.hitLayer + parentActor.name);
+        gameObject.layer = LayerMask.NameToLayer(parentActor.hitLayer);
     }
 
     public DamageMsg BeHurt(AttackMsg attackMsg)
     {
-        lastBeHurtTime = Time.time;
+        parentActor.lastBeHurtTime = Time.time;
         DamageMsg damageMsg = new DamageMsg();
-        if (health)
+        if (parentActor.health && parentActor.health.hp > 0)
         {
-            health.hp -= attackMsg.damage * critRate;
+            parentActor.health.hp -= attackMsg.damage * critRate;
             damageMsg.damage = attackMsg.damage * critRate;
-            if (health.hp <= 0)
+            if (parentActor.health.hp <= 0)
             {
                 damageMsg.isKilled = true;
             }
-            damageMsg.target = health.transform.gameObject;
+            damageMsg.shooter = attackMsg.target;
+            damageMsg.target = parentActor;
+            damageMsg.protectileType = attackMsg.protectileType;
         }
+        parentActor.lastDamageMsg = damageMsg;
         return damageMsg;
-    }
-
-    public bool BeHurt(int amount, GameObject gObject)
-    {
-        lastBeHurtObject = gObject;
-        lastBeHurtTime = Time.time;
-        if (health)
-        {
-            health.hp -= amount * critRate;
-            return true;
-        }
-        return false;
     }
 }
 
@@ -63,23 +49,38 @@ public class AttackMsg
 {
     // 打了多少血
     public float damage;
-    public GameObject target;
+    public Actor target;
+    public ProtectileType protectileType;
 
-    public AttackMsg(float damage, GameObject target)
+    public AttackMsg(float damage, Actor target, ProtectileType protectileType)
     {
         this.damage = damage;
         this.target = target;
+        this.protectileType = protectileType;
     }
 }
 
+[Serializable]
 public class DamageMsg
 {
     public float damage;
     public bool isKilled;
-    public GameObject target;
+    public ProtectileType protectileType;
+    public Actor shooter;
+    public Actor target;
 
     public DamageMsg()
     {
 
     }
+}
+
+// 弹药/伤害类型
+public enum ProtectileType
+{
+    RIFLE,
+    //TITANRIFLE,
+    ROCKET,
+    LASER,
+    TREAD
 }

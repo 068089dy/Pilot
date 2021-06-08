@@ -8,7 +8,7 @@ public class TitanWeaponRocket : MonoBehaviour
     public InputHandler m_InputHandler;
     public PlayerTitanWeaponManager playerTitanWeaponManager;
     public Camera aimCamera;
-    public LayerMask layerMask = -1;
+    //public LayerMask layerMask = -1;
     TitanWeaponController titanWeaponController;
 
     public float coolingTime = 2f;
@@ -17,14 +17,19 @@ public class TitanWeaponRocket : MonoBehaviour
 
     public TitanBulletRocket bulletRocketPrefab;
     public Transform muzzle;
-    [System.NonSerialized]
+    //[System.NonSerialized]
     public TitanBulletRocket curTitanBulletRocket;
+    Actor owner;
+
+    // 锁定系统
+    public MissileLockSystem missileLockSystem;
     // Start is called before the first frame update
     void Start()
     {
         titanWeaponController = GetComponent<TitanWeaponController>();
         curTitanBulletRocket = Instantiate(bulletRocketPrefab, muzzle);
         titanWeaponController.shootAction = Shoot;
+        owner = titanWeaponController.owner;
     }
 
     // Update is called once per frame
@@ -40,13 +45,22 @@ public class TitanWeaponRocket : MonoBehaviour
     {
         if (Time.time > coolingTime + lastShootTime)
         {
-            //playerTitanWeaponManager.isShooting = false;
-            
+            // 不知道为什么有时候没有
+            if (!curTitanBulletRocket)
+            {
+                curTitanBulletRocket = Instantiate(bulletRocketPrefab, muzzle);
+            }
+            if (missileLockSystem && missileLockSystem.curTarget)
+            {
+                curTitanBulletRocket.targetActor = missileLockSystem.curTarget;
+            }
+            else
+            {
                 if (Physics.Raycast(aimCamera.transform.position,
                     aimCamera.transform.forward,
                     out RaycastHit hit,
                     maxRange,
-                    layerMask,
+                    owner.canHitLayerMask,
                     QueryTriggerInteraction.Ignore))
                 {
                     curTitanBulletRocket.targetPos = hit.point;
@@ -55,54 +69,57 @@ public class TitanWeaponRocket : MonoBehaviour
                 {
                     curTitanBulletRocket.targetPos = aimCamera.transform.position + aimCamera.transform.forward * maxRange;
                 }
-                //playerTitanWeaponManager.isShooting = true;
-                lastShootTime = Time.time;
-                curTitanBulletRocket.transform.SetParent(null, true);
-                curTitanBulletRocket.Launch();
-                curTitanBulletRocket.layerMask = layerMask;
-                curTitanBulletRocket = Instantiate(bulletRocketPrefab, muzzle);
+            }
+            //playerTitanWeaponManager.isShooting = true;
+            lastShootTime = Time.time;
+            curTitanBulletRocket.transform.SetParent(null, true);
             
-
+            curTitanBulletRocket.layerMask = owner.canHitLayerMask;
+            curTitanBulletRocket.owner = owner;
+            curTitanBulletRocket.Launch();
+            // 重新生成火箭弹
+            curTitanBulletRocket = Instantiate(bulletRocketPrefab, muzzle);
+            
         }
         else
         {
             //playerTitanWeaponManager.isShooting = true;
         }
     }
-
-    void HandleShoot()
-    {
-        if (Time.time > coolingTime + lastShootTime)
-        {
-            playerTitanWeaponManager.isShooting = false;
-            if (m_InputHandler.GetFireInputDown())
-            {
-                if (Physics.Raycast(aimCamera.transform.position,
-                    aimCamera.transform.forward,
-                    out RaycastHit hit, 
-                    maxRange,
-                    layerMask,
-                    QueryTriggerInteraction.Ignore))
-                {
-                    curTitanBulletRocket.targetPos = hit.point;
-                } else
-                {
-                    curTitanBulletRocket.targetPos = aimCamera.transform.position + aimCamera.transform.forward * maxRange;
-                }
-                playerTitanWeaponManager.isShooting = true;
-                lastShootTime = Time.time;
-                curTitanBulletRocket.transform.SetParent(null, true);
-                curTitanBulletRocket.Launch();
-                curTitanBulletRocket.layerMask = layerMask;
-                curTitanBulletRocket = Instantiate(bulletRocketPrefab, muzzle);
-            }
+   
+    //void HandleShoot()
+    //{
+    //    if (Time.time > coolingTime + lastShootTime)
+    //    {
+    //        playerTitanWeaponManager.isShooting = false;
+    //        if (m_InputHandler.GetFireInputDown())
+    //        {
+    //            if (Physics.Raycast(aimCamera.transform.position,
+    //                aimCamera.transform.forward,
+    //                out RaycastHit hit, 
+    //                maxRange,
+    //                layerMask,
+    //                QueryTriggerInteraction.Ignore))
+    //            {
+    //                curTitanBulletRocket.targetPos = hit.point;
+    //            } else
+    //            {
+    //                curTitanBulletRocket.targetPos = aimCamera.transform.position + aimCamera.transform.forward * maxRange;
+    //            }
+    //            playerTitanWeaponManager.isShooting = true;
+    //            lastShootTime = Time.time;
+    //            curTitanBulletRocket.transform.SetParent(null, true);
+    //            curTitanBulletRocket.Launch();
+    //            curTitanBulletRocket.layerMask = layerMask;
+    //            curTitanBulletRocket = Instantiate(bulletRocketPrefab, muzzle);
+    //        }
             
-        } else
-        {
-            playerTitanWeaponManager.isShooting = true;
-        }
+    //    } else
+    //    {
+    //        playerTitanWeaponManager.isShooting = true;
+    //    }
         
 
 
-    }
+    //}
 }

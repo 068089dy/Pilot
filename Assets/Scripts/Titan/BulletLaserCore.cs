@@ -21,7 +21,8 @@ public class BulletLaserCore : MonoBehaviour
     public float laserWidth = 0.8f;
     public ParticleSystem hitFX;
 
-    public LayerMask hitLayer;
+    //public LayerMask hitLayer;
+    public Actor actor;
 
     AudioSource audioSource;
 
@@ -30,11 +31,12 @@ public class BulletLaserCore : MonoBehaviour
     public AudioClip emissionSFX;
     public AudioClip laserSFX;
     bool isEmissionAudioPlayed;
-    public GameObject owner;
+    public Actor owner;
     public Camera aimCamera;
 
     public bool isLaunching;
-    
+
+    TitanUltimateSkillManager titanUltimateSkillManager;
 
     // Start is called before the first frame update
     void Start()
@@ -98,7 +100,7 @@ public class BulletLaserCore : MonoBehaviour
                         laserFX.endWidth -= Time.deltaTime * 0.5f;
                     }
                     // …À∫¶
-                    if (Physics.Raycast(aimCamera.transform.position, aimCamera.transform.forward, out RaycastHit hit, maxDistance, hitLayer, QueryTriggerInteraction.Ignore))
+                    if (Physics.Raycast(aimCamera.transform.position, aimCamera.transform.forward, out RaycastHit hit, maxDistance, actor.canHitLayerMask, QueryTriggerInteraction.Ignore))
                     {
                         Debug.Log("hit" + hit.point);
                         laserFX.SetPosition(1, transform.InverseTransformPoint(hit.point));
@@ -109,7 +111,7 @@ public class BulletLaserCore : MonoBehaviour
                         if (hit.transform.GetComponent<Damagable>())
                         {
                             Debug.Log("…À∫¶");
-                            AttackMsg attackMsg = new AttackMsg(damage * Time.deltaTime, owner);
+                            AttackMsg attackMsg = new AttackMsg(damage * Time.deltaTime, owner, ProtectileType.LASER);
                             hit.transform.GetComponent<Damagable>().BeHurt(attackMsg);
                         }
                     } else
@@ -128,12 +130,15 @@ public class BulletLaserCore : MonoBehaviour
                 audioSource.Stop();
                 exmisionFX1.Stop();
                 hitFX.Stop();
+                titanUltimateSkillManager.isRunning = false;
             }
         }
     }
 
-    public void Launch()
+    public void Launch(TitanUltimateSkillManager titanUltimateSkillManager)
     {
+        this.titanUltimateSkillManager = titanUltimateSkillManager;
+        titanUltimateSkillManager.isRunning = true;
         isLaunching = true;
         startChargeTime = Time.time;
         laserFX.startWidth = laserWidth;

@@ -14,6 +14,7 @@ public class PlayerAnimationManager : MonoBehaviour
     void Start()
     {
         m_Animator = GetComponent<Animator>();
+        fullBodyIk = GetComponent<FullBodyBipedIK>();
         enableLeftHandIk = true;
     }
 

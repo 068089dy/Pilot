@@ -14,7 +14,7 @@ public class Hook : MonoBehaviour
     PlayerWeaponManager m_PlayerWeaponManager;
     AudioSource m_AudioSource;
     [Header("Hooking Setting")]
-    public float maxHookSpeed = 30f;
+    public float maxHookSpeed = 20f;
     public float lastHookTime;
     public bool hooking = false;
     public GameObject Bullet;
@@ -35,6 +35,8 @@ public class Hook : MonoBehaviour
     public AudioClip recycingHookSFX;
     public AudioClip sendHookSFX;
 
+    PlayerStateManager playerStateManager;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -51,6 +53,7 @@ public class Hook : MonoBehaviour
         hookTargetObject.transform.position = Vector3.zero;
         hookTargetObject.transform.eulerAngles = Vector3.zero;
         hookTargetObject.transform.localScale = Vector3.one;
+        playerStateManager = GetComponent<PlayerStateManager>();
     }
 
     void ShowDeactiveStar()
@@ -174,7 +177,8 @@ public class Hook : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        HandleCharacterHook();
+        if (playerStateManager.curState == PlayerState.PLAYER_CONTROL)
+            HandleCharacterHook();
     }
 
 }

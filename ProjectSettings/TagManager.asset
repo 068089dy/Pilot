@@ -17,13 +17,13 @@ TagManager:
   - EnemyMoveBody
   - TitanMoveBody
   - Operation
-  - TItanHumanHIt
+  - TitanHitBody
   - TitanCockPit
   - TitanBody
   - BloomLayer
-  - 
-  - 
-  - 
+  - EnemyTitanHitBody
+  - EnemyHitBody
+  - EnemyTitanMoveBody
   - 
   - 
   - 

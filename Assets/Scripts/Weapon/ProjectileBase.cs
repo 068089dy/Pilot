@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class ProjectileBase : MonoBehaviour
 {
+    //[System.NonSerialized]
+    //public WeaponController parentWeaponController;
     [System.NonSerialized]
-    public WeaponController parentWeaponController;
-    [System.NonSerialized]
-    public GameObject owner;
+    public Actor owner;
     [System.NonSerialized]
     public GameObject weapon;
     public float shotSpeed = 300;
@@ -41,12 +41,20 @@ public class ProjectileBase : MonoBehaviour
             
             if (hit.transform.gameObject.GetComponent<Damagable>())
             {
-                Debug.Log("Уќжа" + hit.point);
-                hit.transform.gameObject.GetComponent<Damagable>().BeHurt(damage, owner);
-                if (parentWeaponController)
-                {
-                    parentWeaponController.Hited();
-                }
+                //Debug.Log("Уќжа" + hit.point);
+                AttackMsg attackMsg = new AttackMsg(
+                    damage, owner, ProtectileType.RIFLE);
+                DamageMsg damageMsg = hit.transform.gameObject.GetComponent<Damagable>().BeHurt(attackMsg);
+                owner.GetComponent<DamageCounter>().AddAmount(damageMsg);
+                //if (damageMsg.isKilled)
+                //{
+                //    if (owner.GetComponent<DamageCounter>())
+                //        owner.GetComponent<DamageCounter>().Killed();
+                //}
+                //if (parentWeaponController)
+                //{
+                //parentWeaponController.Hited(damageMsg);
+                //}
             }
             if (HitFXPrefab)
             {

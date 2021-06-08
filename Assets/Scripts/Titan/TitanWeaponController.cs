@@ -9,6 +9,7 @@ public class TitanWeaponController : MonoBehaviour
     public TitanStateManager titanStateManager;
     public bool active;
     public UnityAction shootAction;
+    public Actor owner;
     public ShootType shootType = ShootType.AUTO;
 
     public void Update()

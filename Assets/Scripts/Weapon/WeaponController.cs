@@ -8,10 +8,10 @@ public class WeaponController : MonoBehaviour
     // 枪口
     public Transform weaponMuzzle;
     public Camera aimCamera;
-    public LayerMask shotLayermask = -1;
+    //public LayerMask shotLayermask = -1;
     public float maxShotDistance = 500;
 
-    public GameObject owner;
+    public Actor owner;
     public ProjectileBase projectilePrefab;
     //public HitHint hitHint;
     public PlayerUIManager playerUIManager;
@@ -19,6 +19,11 @@ public class WeaponController : MonoBehaviour
     Vector3 curAimPoint;
     public UnityAction StopWeapon;
     public UnityAction StartWeapon;
+    public UnityAction ShootAction;
+
+    public int magazineSize = 50;
+    public int curMagazineNum = 50;
+    public int ammoNum = 800;
 
     public bool active;
     // Start is called before the first frame update
@@ -31,12 +36,18 @@ public class WeaponController : MonoBehaviour
     void Update()
     {
         curAimPoint = aimCamera.transform.position - aimCamera.transform.forward * maxShotDistance;
-        if (Physics.Raycast(aimCamera.transform.position, aimCamera.transform.forward, out RaycastHit hit, maxShotDistance, shotLayermask, QueryTriggerInteraction.Ignore))
+        if (Physics.Raycast(aimCamera.transform.position, aimCamera.transform.forward, out RaycastHit hit, maxShotDistance, owner.canHitLayerMask, QueryTriggerInteraction.Ignore))
         {
             curAimPoint = hit.point;
         }
     }
 
+    public void Shoot()
+    {
+        ShootAction?.Invoke();
+    }
+
+    // 供具体的枪械组件调用
     public void Fire()
     {
         if (projectilePrefab)
@@ -47,20 +58,28 @@ public class WeaponController : MonoBehaviour
                 shotDir = aimCamera.transform.forward;
             }
             ProjectileBase projectileBase = Instantiate(projectilePrefab, weaponMuzzle.position, Quaternion.LookRotation(shotDir));
-            projectileBase.parentWeaponController = this;
+            //projectileBase.parentWeaponController = this;
             projectileBase.owner = owner;
             projectileBase.weapon = gameObject;
-            projectileBase.bulletLayerMask = shotLayermask;
+            projectileBase.bulletLayerMask = owner.canHitLayerMask;
         }
     }
 
-    public void Hited()
-    {
-        if (playerUIManager)
-        {
-            playerUIManager.ShowHitFeedback();
-        }
-    }
+    //public void Hited()
+    //{
+    //    if (playerUIManager)
+    //    {
+    //        playerUIManager.ShowHitFeedback();
+    //    }
+    //}
+
+    //public void Hited(DamageMsg damageMsg)
+    //{
+    //    if (playerUIManager && damageMsg.damage > 0)
+    //    {
+    //        playerUIManager.ShowHitFeedback();
+    //    }
+    //}
 
     public void DisableWeapon()
     {

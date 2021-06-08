@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(AudioSource))]
 [RequireComponent(typeof(TitanStateManager))]
+[DisallowMultipleComponent]
 public class TitanController : MonoBehaviour
 {
     public bool isGrounded;
@@ -14,29 +15,41 @@ public class TitanController : MonoBehaviour
     public float groundCheckDistance = 0.25f;
     public float groundCheckDistanceInAir = 0.27f;
     public float gravityDownForce = 20f;
+    public LayerMask groundCheckLayers = -1;
 
+    [Header("Camera And Player")]
     public Camera titanCamera;
-    public GameObject Player;
+    //public GameObject Player;
+
     // 下机时要用到的
+    [Header("Exit Titan Setting")]
     public Transform rotateHandle;
     public Camera lerpCamera;
-    public Camera playerCamera;
+    //public Camera playerCamera;
     public Transform cockpitCover;
+    public Renderer titanBodyRenderer;
     public float lerpSpeed = 5;
+
+    [Header("Landing Tag")]
+    // 降落光束
+    public GameObject landingLight;
+    // robot亮光
+    public ParticleSystem titanLightTagFX;
 
     CharacterController characterController;
     TitanStateManager titanStateManager;
     TitanAnimationController titanAnimationController;
     AudioSource audioSource;
     PlayerTitanWeaponManager playerWeaponManager;
-    public LayerMask groundCheckLayers = -1;
+    
 
     public AudioClip landSFX;
 
     Vector3 characterVelocity;
 
+    [Header("Screen")]
     public MeshRenderer screenRenderer;
-    public Material screenTopMaterial;
+    Material screenTopMaterial;
     Material screenBottomMaterial;
     Material screenLeftMaterial;
     Material screenRightMaterial;
@@ -47,6 +60,13 @@ public class TitanController : MonoBehaviour
 
     float initTime;
     bool isExiting;
+
+    Actor actor;
+    //[System.NonSerialized]
+    public Actor lastPilot;
+    public bool canFly;
+
+    int lastFrameState;
     // Start is called before the first frame update
     void Start()
     {
@@ -55,6 +75,7 @@ public class TitanController : MonoBehaviour
         titanAnimationController = GetComponent<TitanAnimationController>();
         audioSource = GetComponent<AudioSource>();
         playerWeaponManager = GetComponent<PlayerTitanWeaponManager>();
+        actor = GetComponent<Actor>();
     }
 
     // Update is called once per frame
@@ -66,6 +87,7 @@ public class TitanController : MonoBehaviour
             wasGrounded = isGrounded;
             CheckGround();
             HandleLand();
+            characterController.Move(characterVelocity * Time.deltaTime);
             //characterController.Move(transform.forward * Time.deltaTime* speed);
             //if (!characterController.isGrounded)
             //{
@@ -75,33 +97,41 @@ public class TitanController : MonoBehaviour
         {
             //Camera.SetupCurrent(titanCamera);
             //titanCamera.gameObject.SetActive(true);
+            if (lastFrameState != titanStateManager.curState)
+            {
+                if (lastPilot.characterType == CharacterType.PLAYER)
+                    lastPilot.GetComponent<PlayerCharacterController>().hidePlayer();
+            }
             screenAdjust();
             if (Input.GetKeyDown(KeyCode.E))
             {
-                if (Player)
+                if (lastPilot)
                 {
+                    titanBodyRenderer.enabled = true;
                     isExiting = true;
                     cockpitCover.localEulerAngles = Vector3.zero;
                     titanStateManager.curState = TitanState.EXITING;
                     lerpCamera.gameObject.SetActive(true);
                     titanCamera.gameObject.SetActive(false);
                     //
-                    Player.transform.position = transform.position + transform.forward*3f;
-                    Player.transform.forward = transform.forward;
-
+                    lastPilot.transform.position = transform.position + transform.forward*3f + Vector3.up * 5f;
+                    lastPilot.transform.forward = transform.forward;
+                    
                 }
             }
         } else if (titanStateManager.curState == TitanState.AUTO_CONTROL)
         {
-            
             titanCamera.gameObject.SetActive(false);
-            wasGrounded = isGrounded;
-            CheckGround();
+            //wasGrounded = isGrounded;
+            //CheckGround();
         } else if (titanStateManager.curState == TitanState.EXITING)
         {
             exitTitan();
         }
+        lastFrameState = titanStateManager.curState;
     }
+
+
 
     void exitTitan()
     {
@@ -112,14 +142,21 @@ public class TitanController : MonoBehaviour
             cockpitCover.localEulerAngles = new Vector3(cockpitXAngle, 0, 0);
             
             // 摄像机插值
-            lerpCamera.transform.position = Vector3.Lerp(lerpCamera.transform.position, playerCamera.transform.position, Time.deltaTime * lerpSpeed);
-            lerpCamera.transform.right = Vector3.Lerp(lerpCamera.transform.right, playerCamera.transform.right, Time.deltaTime * lerpSpeed);
+            lerpCamera.transform.position = Vector3.Lerp(lerpCamera.transform.position, lastPilot.actorMainCamera.transform.position, Time.deltaTime * lerpSpeed);
+            lerpCamera.transform.right = Vector3.Lerp(lerpCamera.transform.right, lastPilot.actorMainCamera.transform.right, Time.deltaTime * lerpSpeed);
             if (cockpitXAngle > 89)
             {
                 rotateHandle.localEulerAngles = Vector3.zero;
                 titanStateManager.curState = TitanState.AUTO_CONTROL;
-                Player.SetActive(true);
-                Player.GetComponent<PlayerCharacterController>().initPlayer();
+                //lastPilot.gameObject.SetActive(true);
+                titanCamera.gameObject.SetActive(false);
+                lerpCamera.gameObject.SetActive(false);
+                
+                if (lastPilot.characterType == CharacterType.PLAYER)
+                {
+                    lastPilot.GetComponent<PlayerCharacterController>().initPlayer();
+                    lastPilot.actorMainCamera.gameObject.SetActive(true);
+                }
                 cockpitCover.localEulerAngles = new Vector3(-6, 0, 0);
                 isExiting = false;
             }
@@ -131,14 +168,20 @@ public class TitanController : MonoBehaviour
         titanStateManager.curState = titanState;
     }
 
-    public void setPlayerControlMode()
+    public void setPlayerControlMode(Actor actor)
     {
         titanStateManager.curState = TitanState.PLAYER_CONTROL;
+        titanAnimationController.DisableRightHandIK();
         Camera.SetupCurrent(titanCamera);
+        // 激活镜头
         titanCamera.gameObject.SetActive(true);
+        // 初始化武器
         playerWeaponManager.initWeapon();
         initScreen();
-        //titanCamera.enabled = true;
+        // 隐藏身体
+        titanBodyRenderer.enabled = false;
+        //
+        lastPilot = actor;
     }
 
     void initScreen()
@@ -235,12 +278,31 @@ public class TitanController : MonoBehaviour
     {
         if (isGrounded)
         {
+            // 关闭降落光束
+            landingLight.SetActive(false);
+            // 关闭高亮闪烁
+            var ems = titanLightTagFX.emission;
+            ems.enabled = false;
             if (!wasGrounded)
             {
                 if (characterVelocity.y < -10)
                 {
                     // 下落速度过快时
                     audioSource.PlayOneShot(landSFX);
+                }
+                // 如果是敌军，直接转为自动模式
+                if (actor.team == Team.TEAM2)
+                {
+                    titanStateManager.curState = TitanState.AUTO_CONTROL;
+                    titanCamera.gameObject.SetActive(false);
+                    lerpCamera.gameObject.SetActive(false);
+                    
+                } else if (actor.team == Team.TEAM1)
+                {
+                    // 如果是自己人，打开驾驶舱
+                    //float cockpitXAngle = cockpitCover.localEulerAngles.x;
+                    //cockpitXAngle = Mathf.Lerp(cockpitXAngle, 90, Time.deltaTime * 5f);
+                    cockpitCover.localEulerAngles = new Vector3(90, 0, 0);
                 }
             }
         } else
@@ -251,9 +313,19 @@ public class TitanController : MonoBehaviour
                 // 下落速度过快时
                 titanAnimationController.Air();
             }
-            if (Physics.Raycast(transform.position, Vector3.down, 10, groundCheckLayers, QueryTriggerInteraction.Ignore))
+            // 距离地面10m时，下蹲姿势
+            if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 1000,  groundCheckLayers, QueryTriggerInteraction.Ignore))
             {
-                titanAnimationController.Squat();
+                if (landingLight)
+                {
+                    // 设置光束位置
+                    landingLight.SetActive(true);
+                    landingLight.transform.position = hit.point;
+                }
+                if (Vector3.Distance(hit.point, transform.position) < 50)
+                {
+                    titanAnimationController.Squat();
+                }
             }
             characterController.Move(characterVelocity * Time.deltaTime);
         }

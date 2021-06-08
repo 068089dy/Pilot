@@ -20,11 +20,11 @@ public class WeaponRifle : MonoBehaviour
     //public FullBodyBipedIK fullBodyBipedIK;
     public float shootInterval = 0.1f;
     // µ¯¼ÐÈÝÁ¿
-    public int magazineSize = 40;
+    //public int m_WeaponController.magazineSize = 40;
     // µ¯Ò©ÊýÁ¿
-    public int ammoNum = 800;
+    //public int m_WeaponController.ammoNum = 800;
     // µ±Ç°µ¯¼Ðµ¯Ò©ÊýÁ¿
-    public int curMagazineNum = 20;
+    //public int m_WeaponController.curMagazineNum = 20;
     float lastShootTime;
 
 
@@ -39,6 +39,7 @@ public class WeaponRifle : MonoBehaviour
         m_WeaponController = GetComponent<WeaponController>();
         m_WeaponController.StopWeapon += StopRifle;
         m_WeaponController.StartWeapon = StartRifle;
+        m_WeaponController.ShootAction = Shoot;
     }
 
     // Update is called once per frame
@@ -46,7 +47,8 @@ public class WeaponRifle : MonoBehaviour
     {
         if (m_PlayerWeaponManager.isLoading)
             ListenReloadAnimation();
-        if (m_InputHandler.GetReloadInputDown() && curMagazineNum < magazineSize && ammoNum > 0)
+        // »»µ¯
+        if (m_InputHandler.GetReloadInputDown() && m_WeaponController.curMagazineNum < m_WeaponController.magazineSize && m_WeaponController.ammoNum > 0)
         {
 
             m_PlayerWeaponManager.isLoading = true;
@@ -57,7 +59,7 @@ public class WeaponRifle : MonoBehaviour
             //fullBodyBipedIK.solver.leftHandEffector.positionWeight = 0;
             //fullBodyBipedIK.solver.leftHandEffector.rotationWeight = 0;
         }
-        ammoLoadBar.fillAmount = (float)curMagazineNum / (float)magazineSize;
+        ammoLoadBar.fillAmount = (float)m_WeaponController.curMagazineNum / (float)m_WeaponController.magazineSize;
     }
 
     void ListenReloadAnimation()
@@ -131,30 +133,30 @@ public class WeaponRifle : MonoBehaviour
     void Reload()
     {
         
-        int suppNum = magazineSize - curMagazineNum;
-        if (ammoNum > suppNum)
+        int suppNum = m_WeaponController.magazineSize - m_WeaponController.curMagazineNum;
+        if (m_WeaponController.ammoNum > suppNum)
         {
-            ammoNum -= suppNum;
-            curMagazineNum += suppNum;
+            m_WeaponController.ammoNum -= suppNum;
+            m_WeaponController.curMagazineNum += suppNum;
         } else
         {
-            ammoNum = 0;
-            curMagazineNum += ammoNum;
+            m_WeaponController.ammoNum = 0;
+            m_WeaponController.curMagazineNum += m_WeaponController.ammoNum;
         }
     }
 
     public void Shoot()
     {
-        if (curMagazineNum <= 0)
+        if (m_WeaponController.curMagazineNum <= 0)
         {
             ListenReloadAnimation();
             return;
         }
-        if (Time.time >= lastShootTime + shootInterval && curMagazineNum > 0)
+        if (Time.time >= lastShootTime + shootInterval && m_WeaponController.curMagazineNum > 0)
         {
             lastShootTime = Time.time;
             m_AudioSource.PlayOneShot(shootSFX);
-            curMagazineNum--;
+            m_WeaponController.curMagazineNum--;
             m_WeaponController.Fire();
         }
     }

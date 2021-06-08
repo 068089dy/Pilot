@@ -6,12 +6,13 @@ using UnityEngine;
 public class TitanWeaponRifle : MonoBehaviour
 {
     //public InputHandler inputHandler;
+    public TitanStateManager titanStateManager;
     public Transform weaponMuzzle;
     public Camera aimCamera;
-    public LayerMask shotLayermask = -1;
+    //public LayerMask shotLayermask = -1;
     public float maxShotDistance = 500;
 
-    public GameObject owner;
+    Actor owner;
     public ProjectileBase projectilePrefab;
     public AudioSource audioSource;
     public AudioClip shotSFX;
@@ -27,6 +28,7 @@ public class TitanWeaponRifle : MonoBehaviour
     {
         titanWeaponController = GetComponent<TitanWeaponController>();
         titanWeaponController.shootAction = Shoot;
+        owner = titanWeaponController.owner;
     }
 
     // Update is called once per frame
@@ -34,10 +36,16 @@ public class TitanWeaponRifle : MonoBehaviour
     {
         if (titanWeaponController.active)
         {
-            curAimPoint = aimCamera.transform.position + aimCamera.transform.forward * maxShotDistance;
-            if (Physics.Raycast(aimCamera.transform.position, aimCamera.transform.forward, out RaycastHit hit, maxShotDistance, shotLayermask, QueryTriggerInteraction.Ignore))
+            if (titanStateManager.curState == TitanState.PLAYER_CONTROL)
             {
-                curAimPoint = hit.point;
+                curAimPoint = aimCamera.transform.position + aimCamera.transform.forward * maxShotDistance;
+                if (Physics.Raycast(aimCamera.transform.position, aimCamera.transform.forward, out RaycastHit hit, maxShotDistance, owner.canHitLayerMask, QueryTriggerInteraction.Ignore))
+                {
+                    curAimPoint = hit.point;
+                }
+            } else if (titanStateManager.curState == TitanState.AUTO_CONTROL)
+            {
+                curAimPoint = weaponMuzzle.position + weaponMuzzle.forward;
             }
             //HandleShoot();
         }
@@ -48,7 +56,7 @@ public class TitanWeaponRifle : MonoBehaviour
         if (Time.time > lastShootTime + shootInterval)
         {
             lastShootTime = Time.time;
-            Debug.Log("fire");
+            //Debug.Log("fire");
             if (projectilePrefab)
             {
                 Vector3 shotDir = curAimPoint - weaponMuzzle.position;
@@ -60,7 +68,7 @@ public class TitanWeaponRifle : MonoBehaviour
                 //projectileBase.parentWeaponController = this;
                 projectileBase.owner = owner;
                 projectileBase.weapon = gameObject;
-                projectileBase.bulletLayerMask = shotLayermask;
+                projectileBase.bulletLayerMask = owner.canHitLayerMask;
                 audioSource.PlayOneShot(shotSFX);
             }
         }

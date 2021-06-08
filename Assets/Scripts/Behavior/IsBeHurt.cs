@@ -3,20 +3,25 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class IsBeHurt : Conditional
 {
-    Damagable m_Damagable;
+    Actor actor;
+    EnemyBehaviorController m_EnemyBehaviorController;
     public float damageIntervalLimit = 2;
 
     public override void OnStart()
     {
-        m_Damagable = GetComponent<Damagable>();
+        m_EnemyBehaviorController = GetComponent<EnemyBehaviorController>();
+        actor = GetComponent<Actor>();
     }
 
     public override TaskStatus OnUpdate()
     {
-        if (Time.time < damageIntervalLimit + m_Damagable.lastBeHurtTime)
+        if (Time.time < damageIntervalLimit + actor.lastBeHurtTime)
         {
+            //Debug.Log("最后攻击目标" + m_Damagable.lastDamageMsg.target.gameObject.name);
+            m_EnemyBehaviorController.curAttackTarget = actor.lastDamageMsg.shooter;
             return TaskStatus.Success;
         }
         return TaskStatus.Failure;

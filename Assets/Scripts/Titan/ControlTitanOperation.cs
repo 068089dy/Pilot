@@ -9,7 +9,7 @@ public class ControlTitanOperation : Operation
     // 相机的目标位置
     public Transform cameraTargetTransform;
     // Player
-    public GameObject player;
+    //public GameObject player;
     public PlayerTitanController m_PlayerTitanController;
     public TitanAnimationController titanAnimationController;
     //public TitanStateManager titanStateManager;
@@ -25,6 +25,8 @@ public class ControlTitanOperation : Operation
 
 
     int curState;
+    // 最后操控者
+    Actor lastOperator;
     private void Start()
     {
         //curCamera = Camera.current;
@@ -32,6 +34,7 @@ public class ControlTitanOperation : Operation
         //m_PlayerTitanController.enabled = false;
         lerpCamera.gameObject.SetActive(false);
         curState = ControlTitanState.IDLE;
+        hint = OperationConstants.controlTitan;
     }
     // Start is called before the first frame update
     void Update()
@@ -68,7 +71,7 @@ public class ControlTitanOperation : Operation
         {
             // 初始化
             // 交由铁驭控制
-            titanController.setPlayerControlMode();
+            titanController.setPlayerControlMode(lastOperator);
             //titanStateManager.setPlayerControlMode();
             
             // 隐藏驾驶舱盖子和body
@@ -85,24 +88,23 @@ public class ControlTitanOperation : Operation
         }
     }
 
-    public override void Operate()
+    public override void Operate(Actor actor)
     {
-        /*
-         将player置为无效，并且新建一个相机，将相机从当前县及位置插值到目标位置，然后激活Titan控制
-         */
-        //lerpCamera.enabled = true;
-        lerpCamera.gameObject.SetActive(true);
-        //titanCamera.gameObject.SetActive(false);
-        //Camera.SetupCurrent(lerpCamera);
-        lerpCamera.transform.position = curCamera.transform.position;
-        lerpCamera.transform.forward = curCamera.transform.forward;
-        lerpCamera.fieldOfView = curCamera.fieldOfView;
-        //lerping = true;
+        lastOperator = actor;
+        if (actor.characterType == CharacterType.PLAYER)
+        {
+            curCamera = actor.actorMainCamera;
+            lerpCamera.gameObject.SetActive(true);
+            lerpCamera.transform.position = curCamera.transform.position;
+            lerpCamera.transform.forward = curCamera.transform.forward;
+            lerpCamera.fieldOfView = curCamera.fieldOfView;
+            actor.GetComponent<PlayerCharacterController>().initPlayer();
+        }
         curState = ControlTitanState.ONING;
-        player.GetComponent<PlayerCharacterController>().initPlayer();
-        player.SetActive(false);
+        //actor.gameObject.SetActive(false);
         // 打开驾驶舱盖子
         cockPitCover.transform.localEulerAngles = new Vector3(90, 0, 0);
+        
     }
 }
 

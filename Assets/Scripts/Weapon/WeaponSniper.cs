@@ -15,11 +15,17 @@ public class WeaponSniper : MonoBehaviour
 
     [System.NonSerialized]
     public float loadingProgress = 1f;
+
+    public PlayerWeaponManager playerWeaponManager;
+    string materialVarBlur = "Vector1_4D0B16C4";
+    public MeshRenderer screenRenderer;
+    Material screenMaterial;
     // Start is called before the first frame update
     void Start()
     {
         m_WeaponController = GetComponent<WeaponController>();
-        //m_WeaponController.
+        m_WeaponController.ShootAction = Shoot;
+        screenMaterial = screenRenderer.material;
     }
 
     // Update is called once per frame
@@ -35,10 +41,17 @@ public class WeaponSniper : MonoBehaviour
         }
         loadingBar.fillAmount = loadingProgress;
         loadingBar2.fillAmount = loadingProgress;
-        
+        if (playerWeaponManager.isAiming)
+        {
+            screenMaterial.SetFloat(materialVarBlur, Mathf.Lerp(screenMaterial.GetFloat(materialVarBlur), 0f, Time.deltaTime * 0.5f));
+        } else
+        {
+            //screenMaterial.SetFloat(materialVarBlur, )
+            screenMaterial.SetFloat(materialVarBlur, Mathf.Lerp(screenMaterial.GetFloat(materialVarBlur), 1f, Time.deltaTime * 10));
+        }
     }
 
-    public void Shoot()
+    void Shoot()
     {
         if (loadingProgress >= 1f)
         {

@@ -39,7 +39,10 @@ public class WalkPatrol : Action
     // Update is called once per frame
     public override TaskStatus OnUpdate()
     {
-        m_EnemyAnimationController.Walk();
+        if (m_CharacterController.velocity.sqrMagnitude > 0)
+        {
+            m_EnemyAnimationController.Walk();
+        }
         self2D = new Vector2(transform.position.x, transform.position.z);
         // 水平方向到达目标点，则切换下一个目标
         if (Vector2.Distance(self2D, target2D) < pointDistanceLimit)

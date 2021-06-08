@@ -17,7 +17,7 @@ public class Attack : Action
     public EnemyWeaponControl m_EnemyWeaponController;
 
 
-    GameObject curObject;
+    public Actor curObject;
     //public GameObject testObject;
     // 射线遮挡物掩码
     public LayerMask obstructionLayerMask = -1;
@@ -32,7 +32,7 @@ public class Attack : Action
     public Vector3 targetCenterOffset = Vector3.up;
 
     public float attackPosOffsetRandom = 2;
-    bool isTargetVisible;
+    public bool isTargetVisible;
     public override void OnStart()
     {
         m_EnemyAnimationController = GetComponent<EnemyAnimationController>();
@@ -44,7 +44,7 @@ public class Attack : Action
     {
         if (m_EnemyBehaviorController.curAttackTarget == null)
         {
-            Debug.Log("无攻击目标"+ m_EnemyBehaviorController.curAttackTarget.name);
+            //Debug.Log("无攻击目标"+ m_EnemyBehaviorController.curAttackTarget.gameObject.name);
             return TaskStatus.Failure;
         }
 
@@ -53,14 +53,14 @@ public class Attack : Action
         m_EnemyAnimationController.Aim();
 
         
-        if (curObject.GetComponent<Damagable>() != null && curObject.GetComponent<Damagable>().DamagePoint != null)
+        if (curObject.GetComponent<Damagable>() != null && curObject.GetComponent<Damagable>().parentActor.damagePoint != null)
         {
-            m_EnemyAnimationController.SetAimIkTarget(curObject.GetComponent<Damagable>().DamagePoint);
+            m_EnemyAnimationController.SetAimIkTarget(curObject.GetComponent<Damagable>().parentActor.damagePoint);
         } else
         {
             m_EnemyAnimationController.SetAimIkTarget(curObject.transform);
         }
-        //transform.LookAt(new Vector3(targets[0].transform.position.x, transform.position.y, targets[0].transform.position.z));
+        
         transform.forward = Vector3.Lerp(transform.forward, new Vector3(
                     curObject.transform.position.x - transform.position.x,
                     0,
@@ -90,6 +90,7 @@ public class Attack : Action
                 //Debug.Log("未超过丢失间隔"+ lastDiscoverTime + ","+Time.time);
                 return TaskStatus.Running;
             }
+            Debug.Log("目标不可见且丢失");
             return TaskStatus.Failure;
         }
     }
@@ -102,19 +103,24 @@ public class Attack : Action
     bool CheckTargetVisible()
     {
         if (curObject != null) {
-            if (Physics.Raycast(transform.position, curObject.transform.position + targetCenterOffset - transform.position, out RaycastHit hit, maxAttackDistabce, obstructionLayerMask))
+            //Debug.Log("当前目标" + curObject.name);
+            Vector3 eyePos = transform.position + Vector3.up;
+            if (Physics.Raycast(eyePos, curObject.transform.position + targetCenterOffset - eyePos, out RaycastHit hit, maxAttackDistabce, obstructionLayerMask))
             {
-                if (hit.transform.gameObject == curObject)
+                if (hit.transform == curObject.transform)
                 {
+                    //Debug.Log("碰到啥了1" + hit.transform.gameObject.name);
                     isTargetVisible = true;
                     lastDiscoverTime = Time.time;
                 } else
                 {
+                    //Debug.Log("碰到啥了"+hit.transform.gameObject.name);
                     isTargetVisible = false;
                 }
             }
         } else
         {
+            //Debug.Log("当前目标weikong");
             isTargetVisible = false;
         }
         return isTargetVisible;
@@ -126,7 +132,7 @@ public class Attack : Action
         {
             pos += new Vector3(Random.Range(-1f, 1f) * attackPosOffsetRandom, Random.Range(-1f, 1f) * attackPosOffsetRandom, Random.Range(-1f, 1f) * attackPosOffsetRandom);
             lastAttackTime = Time.time;
-            m_EnemyAnimationController.Shoot();
+            //m_EnemyAnimationController.Shoot();
             m_EnemyWeaponController.Fire(pos);
         }
     }

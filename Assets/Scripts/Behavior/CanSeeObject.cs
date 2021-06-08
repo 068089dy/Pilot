@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class CanSeeObject : Conditional
 {
-    public string targetTag;
+    //public string targetTag;
     public GameObject[] targets;
     EnemyBehaviorController m_EnemyBehaviorController;
     public float angleLimit = 90;
@@ -18,7 +18,13 @@ public class CanSeeObject : Conditional
     public LayerMask obstructionLayerMask = -1;
     public override void OnStart()
     {
-        targets = GameObject.FindGameObjectsWithTag(targetTag);
+        if (GetComponent<Actor>().team == Team.TEAM1)
+        {
+            targets = GameObject.FindGameObjectsWithTag("group2");
+        } else if (GetComponent<Actor>().team == Team.TEAM2)
+        {
+            targets = GameObject.FindGameObjectsWithTag("group1");
+        }
         m_EnemyBehaviorController = GetComponent<EnemyBehaviorController>();
     }
 
@@ -26,6 +32,11 @@ public class CanSeeObject : Conditional
     {
         // 选择目标
         m_EnemyBehaviorController.curAttackTarget = SelectObject();
+        // 目标为空，返回失败
+        if (!m_EnemyBehaviorController.curAttackTarget)
+        {
+            return TaskStatus.Failure;
+        }
         // 如果目标未丢失（即在指定时间内法线目标），返回成功
         if (Time.time < lastSeeTime + discoverInterval)
         {
@@ -39,22 +50,39 @@ public class CanSeeObject : Conditional
             if (Physics.Raycast(transform.position, m_EnemyBehaviorController.curAttackTarget.transform.position + Vector3.up - transform.position, out RaycastHit hit, distanceLimit, obstructionLayerMask)){
                 Debug.DrawLine(transform.position, m_EnemyBehaviorController.curAttackTarget.transform.position + Vector3.up, Color.red);
                 //Debug.Log("碰撞");
-                if (hit.transform.gameObject == m_EnemyBehaviorController.curAttackTarget)
+                if (hit.transform == m_EnemyBehaviorController.curAttackTarget.transform)
                 {
                     //Debug.Log("碰撞合适");
                     lastSeeTime = Time.time;
                     return TaskStatus.Success;
                 } else
                 {
-                    Debug.Log("碰撞不合适");
+                    Debug.Log("碰撞不合适"+ hit.transform.gameObject.name);
                 }
             }
         }
         return TaskStatus.Failure;
     }
 
-    GameObject SelectObject()
+    Actor SelectObject()
     {
-        return targets[0];
+        Actor target = null;
+        if (targets.Length > 0)
+        {
+            float minD = distanceLimit;
+            foreach (GameObject ob in targets)
+            {
+                if (ob.activeInHierarchy && ob.GetComponent<Actor>())
+                {
+                    if (Vector3.Distance(ob.transform.position, transform.position) < minD)
+                    {
+                        minD = Vector3.Distance(ob.transform.position, transform.position);
+                        target = ob.GetComponent<Actor>();
+                    }
+                }
+            }
+        }
+        //return targets[0];
+        return target;
     }
 }

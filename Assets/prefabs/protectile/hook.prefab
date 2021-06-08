@@ -192,7 +192,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cafe802e1a2e8044d84ed5c741a41f5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 50
+  speed: 60
   hookLayerMask:
     serializedVersion: 2
     m_Bits: 55

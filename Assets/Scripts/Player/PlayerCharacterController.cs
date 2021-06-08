@@ -38,7 +38,7 @@ public class PlayerCharacterController : MonoBehaviour
                 if (m_PlayerWeaponManager.curWeaponIndex == 0)
                     return 0.5f;
                 else if (m_PlayerWeaponManager.curWeaponIndex == 1)
-                    return 0.3f;
+                    return 0.15f;
             }
 
             
@@ -120,7 +120,14 @@ public class PlayerCharacterController : MonoBehaviour
     // 起跳声
     public AudioClip jumpSFX;
     public AudioClip doubleJumpSFX;
-    // 二段跳
+
+    //[Header("Killed setting")]
+    //public AudioClip killedSFX;
+
+    public PlayerUIManager playerUIManager;
+    PlayerStateManager playerStateManager;
+    TeamManager teamManager;
+    Actor actor;
     // Start is called before the first frame update
     void Start()
     {
@@ -131,24 +138,45 @@ public class PlayerCharacterController : MonoBehaviour
         m_GameFlowManager = FindObjectOfType<GameFlowManager>();
         m_PlayerAnimationManager = GetComponent<PlayerAnimationManager>();
         m_PlayerWeaponManager = GetComponent<PlayerWeaponManager>();
+        playerStateManager = GetComponent<PlayerStateManager>();
+        rotationSpeed = m_InputHandler.mouseSensitivity;
+        teamManager = FindObjectOfType<TeamManager>();
+        actor = GetComponent<Actor>();
+    }
+
+    private void Update()
+    {
+        if (playerStateManager.curState == PlayerState.PLAYER_CONTROL)
+        {
+            if (m_Health.hp > 0)
+            {
+
+                wasGrounded = isGrounded;
+                isJumped = false;
+                CheckGround();
+                HandleCharacterMovement();
+                characterController.Move(characterVelocity * Time.deltaTime);
+            }
+            else
+            {
+                HandleCharacterMovement();
+                //FreeMovement();
+                //m_GameFlowManager.GameOver();
+            }
+        }
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        wasGrounded = isGrounded;
-        isJumped = false;
-        CheckGround();
-        if (m_Health.hp > 0)
-        {
-            HandleCharacterMovement();
-        } else
-        {
-            HandleCharacterMovement();
-            //FreeMovement();
-            //m_GameFlowManager.GameOver();
-        }
-    }
+    //void FixedUpdate()
+    //{
+    //    if (playerStateManager.curState == PlayerState.PLAYER_CONTROL)
+    //    {
+    //        wasGrounded = isGrounded;
+    //        isJumped = false;
+    //        CheckGround();
+    //        characterController.Move(characterVelocity * Time.deltaTime);
+    //    }
+    //}
 
     // 获取胶囊体底部半球球心
     Vector3 GetCapsuleBottomHemisphere()
@@ -159,7 +187,9 @@ public class PlayerCharacterController : MonoBehaviour
     // 获取胶囊体顶部半球球心
     Vector3 GetCapsuleTopHemisphere()
     {
-        return transform.position + (transform.up * (characterController.height - characterController.radius));
+        if (characterController)
+            return transform.position + (transform.up * (characterController.height - characterController.radius));
+        return Vector3.zero;
     }
 
     bool CheckGround()
@@ -213,17 +243,20 @@ public class PlayerCharacterController : MonoBehaviour
         }
     }
 
-    
-
-    void HandleCharacterMovement()
+    void HandleRotation()
     {
-        TryIdle();
         transform.Rotate(new Vector3(0f, m_InputHandler.GetLookInputHorizontal() * rotationSpeed * RotationMultiplier, 0f));
         {
             m_CameraVerticalAngle += m_InputHandler.GetLookInputVertical() * rotationSpeed * RotationMultiplier;
             m_CameraVerticalAngle = Mathf.Clamp(m_CameraVerticalAngle, -89f, 89f);
             cameraRotateHelper.transform.localEulerAngles = new Vector3(m_CameraVerticalAngle, 0, 0);
         }
+    }
+
+    void HandleCharacterMovement()
+    {
+        TryIdle();
+        HandleRotation();
         // 世界坐标移动方向（水平）
         Vector3 worldspaceMoveInput = transform.TransformVector(m_InputHandler.GetMoveInput());
         wasHooked = isHooking;
@@ -301,7 +334,7 @@ public class PlayerCharacterController : MonoBehaviour
 
             // 计算以当前速度，到达目标位置所需时间，如果抓钩时间超过了这个时长，停止hooking状态
             //m_Hook.expectedHookTime = (m_Hook.hookTargetObject.transform.position - hookRootPos).magnitude / characterVelocity.magnitude;
-            if (((hookRootPos - m_Hook.hookTargetObject.transform.position).sqrMagnitude < 1f)
+            if (((hookRootPos - m_Hook.hookTargetObject.transform.position).sqrMagnitude < 2f)
                 //(Time.time - m_Hook.lastHookTime > m_Hook.expectedHookTime)
                 )
             {
@@ -414,7 +447,9 @@ public class PlayerCharacterController : MonoBehaviour
                 DoubleJump();
             }
         }
-        characterController.Move(characterVelocity * Time.deltaTime);
+        //Vector3 addtionalSpeed = Vector3.up;
+        //characterVelocity += addtionalSpeed;
+        
         // 
         //if (!isGrounded && 
         //    (characterController.velocity.y - characterVelocity.y) / Time.deltaTime <= -100)
@@ -432,13 +467,26 @@ public class PlayerCharacterController : MonoBehaviour
 
     public void initPlayer()
     {
-        Debug.Log("初始化");
+        //Debug.Log("初始化");
         m_CameraVerticalAngle = 0f;
         wasHooked = false;
         isHooking = false;
+        m_Hook.hooking = false;
+        m_Hook.RecyclingHook();
         characterVelocity = Vector3.zero;
         m_PlayerWeaponManager.isAiming = false;
         m_PlayerWeaponManager.setWeapon(0);
+        playerStateManager.curState = PlayerState.PLAYER_CONTROL;
+        teamManager.RegisterActor(actor);
+    }
+
+    public void hidePlayer()
+    {
+        if (teamManager)
+        {
+            teamManager.UnRegisterActor(actor);
+            transform.position = new Vector3(0, -10, 0);
+        }
     }
 
 

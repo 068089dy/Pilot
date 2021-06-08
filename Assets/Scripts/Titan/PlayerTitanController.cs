@@ -6,6 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(InputHandler))]
 [RequireComponent(typeof(TitanAnimationController))]
 [RequireComponent(typeof(TitanStateManager))]
+[DisallowMultipleComponent]
 public class PlayerTitanController : MonoBehaviour
 {
     public bool isGrounded;
@@ -26,6 +27,10 @@ public class PlayerTitanController : MonoBehaviour
     {
         get
         {
+            if (titanUltimateSkillManager.isRunning)
+            {
+                return 0.5f;
+            }
             return 1f;
         }
     }
@@ -74,6 +79,9 @@ public class PlayerTitanController : MonoBehaviour
     PlayerTitanWeaponManager m_PlayerTitanWeaponManager;
     InputHandler m_InputHandler;
     TitanStateManager titanStateManager;
+    TitanUltimateSkillManager titanUltimateSkillManager;
+
+    float lastJumpTime;
     // Start is called before the first frame update
     void Start()
     {
@@ -83,6 +91,7 @@ public class PlayerTitanController : MonoBehaviour
         m_InputHandler = GetComponent<InputHandler>();
         m_AudioSource = GetComponent<AudioSource>();
         titanStateManager = GetComponent<TitanStateManager>();
+        titanUltimateSkillManager = GetComponent<TitanUltimateSkillManager>();
     }
 
     // Update is called once per frame
@@ -93,8 +102,20 @@ public class PlayerTitanController : MonoBehaviour
             wasGrounded = isGrounded;
             CheckGround();
             HandleCharacterMovement();
+            characterController.Move(characterVelocity * Time.deltaTime);
         }
     }
+
+    //private void FixedUpdate()
+    //{
+        
+    //    if (titanStateManager.curState == TitanState.PLAYER_CONTROL)
+    //    {
+    //        wasGrounded = isGrounded;
+    //        CheckGround();
+    //        characterController.Move(characterVelocity * Time.deltaTime);
+    //    }
+    //}
 
     void HandleCharacterMovement()
     {
@@ -114,7 +135,7 @@ public class PlayerTitanController : MonoBehaviour
 
             if (!wasGrounded)
             {
-                if (characterVelocity.y < -10)
+                if (characterVelocity.y < -30)
                 {
                     // 下落速度过快时
                     m_AudioSource.PlayOneShot(landSFX);
@@ -122,19 +143,27 @@ public class PlayerTitanController : MonoBehaviour
             }
             // 计算目标速度
             Vector3 targetVelocity = worldspaceMoveInput * maxSpeedOnGround * speedModifier;
+            // 闪避加速
+            if (lastJumpTime != 0 && Time.time < lastJumpTime + 0.5f)
+            {
+                targetVelocity = 5f * targetVelocity;
+            }
             targetVelocity = GetDirectionReorientedOnSlope(targetVelocity.normalized, m_GroundNormal) * targetVelocity.magnitude;
             // 限制最大速度
             targetVelocity = Vector3.ClampMagnitude(targetVelocity, 60f);
             // 角色速度插值
             characterVelocity = Vector3.Lerp(characterVelocity, targetVelocity, movementSharpnessOnGround * Time.deltaTime);
 
-            if (m_InputHandler.GetJumpInputDown())
+            if (m_InputHandler.GetJumpInputDown()
+                && worldspaceMoveInput.sqrMagnitude > 0
+                && !titanUltimateSkillManager.isRunning)
             {
-                characterVelocity = characterVelocity * 10f;
+                //characterVelocity = characterVelocity * 10f;
+                lastJumpTime = Time.time;
                 m_AudioSource.PlayOneShot(jumpSFX);
             }
 
-            if (worldspaceMoveInput.sqrMagnitude > 0)
+            if (worldspaceMoveInput.sqrMagnitude > 0 && !titanUltimateSkillManager.isRunning)
             {
                 TryWalk();
                 //titanAnimationController.Walk();
@@ -142,7 +171,8 @@ public class PlayerTitanController : MonoBehaviour
             
             // 跑动画
             if (m_InputHandler.GetRunInputHeld() 
-                && worldspaceMoveInput.sqrMagnitude > 0)
+                && worldspaceMoveInput.sqrMagnitude > 0
+                && !titanUltimateSkillManager.isRunning)
             {
                 isRuning = true;
                 titanAnimationController.Run();
@@ -210,7 +240,13 @@ public class PlayerTitanController : MonoBehaviour
              * 让当前的角色速度符合characterController计算的结果，因为characterController由物理计算。
              * 但是有时候（比如卡在斜坡角时，character Controller会在y轴方向有一个突变）
              */
-            if (characterVelocity.y < -10)
+            // 如果角色的实际速度小于目标速度，说明角色在空中碰撞减速了
+            // y方向下落时也是一样的，如果角色卡在了空中，那么按照gravityDownForce向下加速的话，当角色在某一时刻脱离卡住的时候，角色会一下子拍到地面上
+            if (characterController.velocity.sqrMagnitude < characterVelocity.sqrMagnitude)
+            {
+                characterVelocity = characterController.velocity;
+            }
+            if (characterVelocity.y < -30)
             {
                 // 下落速度过快时
                 titanAnimationController.Air();
@@ -223,7 +259,7 @@ public class PlayerTitanController : MonoBehaviour
             characterVelocity += Vector3.down * gravityDownForce * Time.deltaTime;
             
         }
-        characterController.Move(characterVelocity * Time.deltaTime);
+        
         // 
         //if (!isGrounded && 
         //    (characterController.velocity.y - characterVelocity.y) / Time.deltaTime <= -100)
@@ -253,6 +289,10 @@ public class PlayerTitanController : MonoBehaviour
         if (m_PlayerTitanWeaponManager.isShooting)
         {
             titanAnimationController.Shoot();
+        }
+        if (titanUltimateSkillManager.isRunning)
+        {
+            titanAnimationController.Idle();
         }
     }
 

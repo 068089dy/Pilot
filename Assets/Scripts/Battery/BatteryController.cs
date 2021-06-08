@@ -12,6 +12,7 @@ public class BatteryController : MonoBehaviour
     public float maxAngle = 40;
     public float lerpSpeed = 0.3f;
     public Transform target;
+    public Transform targetHitTransform;
     bool isTargetVisible;
 
     public LayerMask layerMask = -1;
@@ -22,6 +23,8 @@ public class BatteryController : MonoBehaviour
     public Transform Mullze;
     public ProjectileBase BulletPrefab;
     public float coolingTime = 1;
+    AudioSource audioSource;
+    public AudioClip shootSFX;
     float lastShootTime;
     BatteryState curState;
 
@@ -30,7 +33,7 @@ public class BatteryController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        audioSource = GetComponent<AudioSource>();
         diedFX.SetActive(false);
         if (gameObject.tag == "group1")
         {
@@ -59,8 +62,8 @@ public class BatteryController : MonoBehaviour
                 diedFX.SetActive(false);
             }
             findTargetTransform();
-            checkTargetVisible();
-            if (isTargetVisible)
+            //checkTargetVisible();
+            if (target)
             {
                 HandleRotate();
                 HandleShoot();
@@ -80,10 +83,11 @@ public class BatteryController : MonoBehaviour
     {
         if (Time.time > lastShootTime + coolingTime)
         {
+            audioSource.PlayOneShot(shootSFX);
             lastShootTime = Time.time;
-            ProjectileBase projectileBase = Instantiate(BulletPrefab, Mullze.position, Quaternion.LookRotation(target.position - Mullze.position));
+            ProjectileBase projectileBase = Instantiate(BulletPrefab, Mullze.position, Quaternion.LookRotation(VertiacalRotateHandle.forward));
             //projectileBase.parentWeaponController = this;
-            projectileBase.owner = gameObject;
+            projectileBase.owner = gameObject.GetComponent<Actor>();
             projectileBase.weapon = gameObject;
             projectileBase.bulletLayerMask = layerMask;
         }
@@ -94,12 +98,12 @@ public class BatteryController : MonoBehaviour
         //target = findTargetTransform();
         if (target)
         {
-            Vector3 targetHorizantolDir = target.position - transform.position;
+            Vector3 targetHorizantolDir = targetHitTransform.position - transform.position;
             targetHorizantolDir.y = 0;
             // 绕y轴旋转
             HorizantolRotateHandle.forward = Vector3.Lerp(HorizantolRotateHandle.forward, targetHorizantolDir, Time.deltaTime * lerpSpeed);
 
-            Vector3 targetVertical = target.position - VertiacalRotateHandle.position;
+            Vector3 targetVertical = targetHitTransform.position - VertiacalRotateHandle.position;
             //targetVertical.x = 0;
             // x轴旋转
             VertiacalRotateHandle.forward = Vector3.Lerp(VertiacalRotateHandle.forward, targetVertical, Time.deltaTime * lerpSpeed);
@@ -119,6 +123,8 @@ public class BatteryController : MonoBehaviour
     Transform findTargetTransform()
     {
         target = null;
+        targetHitTransform = null;
+        
         float minDistance = maxDistance;
         if (targetList.Length > 0)
         {
@@ -128,15 +134,35 @@ public class BatteryController : MonoBehaviour
                 {
                     if (Vector3.Distance(ob.transform.position, transform.position) < minDistance)
                     {
-                        minDistance = Vector3.Distance(ob.transform.position, transform.position);
-                        target = ob.transform;
-                        // 如果有攻击点，目标为攻击点
-                        if (target.gameObject.GetComponent<Damagable>())
+                        isTargetVisible = false;
+                        Transform obHitPoint = null;
+                        if (ob.transform.gameObject.GetComponent<Damagable>())
                         {
-                            if (target.gameObject.GetComponent<Damagable>().DamagePoint)
+                            if (ob.transform.gameObject.GetComponent<Damagable>().parentActor.damagePoint)
                             {
-                                target = target.gameObject.GetComponent<Damagable>().DamagePoint.transform;
+                                obHitPoint = ob.transform.gameObject.GetComponent<Damagable>().parentActor.damagePoint;
+                                
                             }
+                        }
+                        checkTargetVisible(ob.transform, obHitPoint);
+                        if (isTargetVisible)
+                        {
+                            Debug.Log("发现目标" + ob.name);
+                            minDistance = Vector3.Distance(ob.transform.position, transform.position);
+                            target = ob.transform;
+                            targetHitTransform = target;
+                            if (obHitPoint)
+                            {
+                                targetHitTransform = obHitPoint;
+                            }
+                            // 如果有攻击点，目标为攻击点
+                            //if (target.gameObject.GetComponent<Damagable>())
+                            //{
+                            //    if (target.gameObject.GetComponent<Damagable>().DamagePoint)
+                            //    {
+                            //        targetHitTransform = target.gameObject.GetComponent<Damagable>().DamagePoint.transform;
+                            //    }
+                            //}
                         }
                     }
                     //return tf.transform;
@@ -147,28 +173,35 @@ public class BatteryController : MonoBehaviour
         return target;
     }
 
-    bool checkTargetVisible()
+    bool checkTargetVisible(Transform curT, Transform hitPoint)
     {
         isTargetVisible = false;
-        if (Physics.Raycast(VertiacalRotateHandle.position, target.position - VertiacalRotateHandle.position, out RaycastHit hit, maxDistance, layerMask, QueryTriggerInteraction.Ignore))
+        //Transform curT = targetHitTransform;
+        if (Physics.Raycast(VertiacalRotateHandle.position, hitPoint.position - VertiacalRotateHandle.position, out RaycastHit hit, maxDistance, layerMask, QueryTriggerInteraction.Ignore))
         {
-            Debug.DrawLine(VertiacalRotateHandle.position, target.position);
-            Debug.Log(hit.transform.gameObject.name + (hit.transform == target.transform));
+            Debug.DrawLine(VertiacalRotateHandle.position, curT.position);
+            Debug.Log(hit.transform.gameObject.name + (hit.transform == curT.transform));
             // 如果击中的目标是当前目标，或者当前目标的
-            if (hit.transform.gameObject.GetComponent<Damagable>())
-            {
-                if (hit.transform.gameObject.GetComponent<Damagable>().DamagePoint == target.transform)
-                {
-                    isTargetVisible = true;
-                }
-            }
-            if (hit.transform == target.transform)
+            //if (hit.transform.gameObject.GetComponent<Damagable>())
+            //{
+            //    if (hit.transform.gameObject.GetComponent<Damagable>().DamagePoint == curT.transform)
+            //    {
+            //        isTargetVisible = true;
+            //    }
+            //}
+            if (hit.transform == curT.transform)
             {
                 isTargetVisible = true;
             }
         }
         return isTargetVisible;
     }
+}
+
+class hitTarget
+{
+    public Transform transform;
+    public Transform hitTransform;
 }
 
 public enum BatteryState
