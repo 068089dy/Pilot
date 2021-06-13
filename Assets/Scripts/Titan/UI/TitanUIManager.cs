@@ -36,6 +36,7 @@ public class TitanUIManager : MonoBehaviour
     {
         damageCounter.DamageAction += ShowHitFeedback;
         damageCounter.KilledAction += ShowKilledFeedback;
+        hideUI();
     }
 
     // Update is called once per frame
@@ -56,19 +57,29 @@ public class TitanUIManager : MonoBehaviour
         ShowShooterPos();
         if (titanStateManager.curState == TitanState.PLAYER_CONTROL)
         {
-            HPImg.enabled = true;
-            EnergeImg.enabled = true;
-            hitHint.GetComponent<Image>().enabled = true;
-            killedHint.GetComponent<Image>().enabled = true;
-            beHurtHint.GetComponent<Image>().enabled = true;
+            showUI();
         } else
         {
-            HPImg.enabled = false;
-            EnergeImg.enabled = false;
-            hitHint.GetComponent<Image>().enabled = false;
-            killedHint.GetComponent<Image>().enabled = false;
-            beHurtHint.GetComponent<Image>().enabled = false;
+            hideUI();
         }
+    }
+
+    void hideUI()
+    {
+        HPImg.enabled = false;
+        EnergeImg.enabled = false;
+        hitHint.GetComponent<Image>().enabled = false;
+        killedHint.GetComponent<Image>().enabled = false;
+        beHurtHint.GetComponent<Image>().enabled = false;
+    }
+
+    void showUI()
+    {
+        HPImg.enabled = true;
+        EnergeImg.enabled = true;
+        hitHint.GetComponent<Image>().enabled = true;
+        killedHint.GetComponent<Image>().enabled = true;
+        beHurtHint.GetComponent<Image>().enabled = true;
     }
 
     // ÃüÖÐ·´À¡
