@@ -43,16 +43,20 @@ public class OperationRay : MonoBehaviour
                     //hintText.text = operation.hint;
                     hintTextMesh.text = operation.hint;
                     // 点按操作
-                    if (operation.type == 1)
+                    if (operation.trigerType == 1)
                     {
                         if (inputHandler.GetOperateInputDown())
                         {
                             operation.Operate(actor);
-                            playerStateManager.curState = PlayerState.DRIVING;
-                            hideOperateHint();
+                            if (operation.type == OpreationType.DRIVE)
+                            {
+                                playerStateManager.lastTitanActor = operation.parentActor;
+                                playerStateManager.curState = PlayerState.DRIVING;
+                                hideOperateHint();
+                            }
                         }
                     }
-                    else if (operation.type == 2)
+                    else if (operation.trigerType == 2)
                     {
                         // 长按操作
                         if (inputHandler.GetOperateInputHeld() && canInput)

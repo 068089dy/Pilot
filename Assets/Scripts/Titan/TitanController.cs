@@ -35,6 +35,7 @@ public class TitanController : MonoBehaviour
     public GameObject landingLight;
     // robot亮光
     public ParticleSystem titanLightTagFX;
+    public GameObject DiedFXPrefab;
 
     CharacterController characterController;
     TitanStateManager titanStateManager;
@@ -81,6 +82,26 @@ public class TitanController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (titanStateManager.curState != TitanState.DIED && actor.health.hp <= 0)
+        {
+            if (titanStateManager.curState == TitanState.PLAYER_CONTROL)
+            {
+                if (lastPilot)
+                {
+                    if (lastPilot.characterType == CharacterType.PLAYER)
+                    {
+                        lerpCamera.gameObject.SetActive(false);
+                        titanCamera.gameObject.SetActive(false);
+                        lastPilot.GetComponent<PlayerCharacterController>().initPlayer();
+                        lastPilot.actorMainCamera.gameObject.SetActive(true);
+                    }
+                }
+            }
+            titanStateManager.curState = TitanState.DIED;
+            GameObject dfx = Instantiate(DiedFXPrefab, transform.position + Vector3.up * 3f, Quaternion.identity);
+            Destroy(dfx, 6);
+            Destroy(gameObject, 0.5f);
+        }
         if (titanStateManager.curState == TitanState.LANDING)
         {
             titanCamera.gameObject.SetActive(false);
@@ -126,6 +147,7 @@ public class TitanController : MonoBehaviour
             //CheckGround();
         } else if (titanStateManager.curState == TitanState.EXITING)
         {
+            
             exitTitan();
         }
         lastFrameState = titanStateManager.curState;
@@ -172,7 +194,7 @@ public class TitanController : MonoBehaviour
     {
         titanStateManager.curState = TitanState.PLAYER_CONTROL;
         titanAnimationController.DisableRightHandIK();
-        Camera.SetupCurrent(titanCamera);
+        //Camera.SetupCurrent(titanCamera);
         // 激活镜头
         titanCamera.gameObject.SetActive(true);
         // 初始化武器
@@ -279,7 +301,8 @@ public class TitanController : MonoBehaviour
         if (isGrounded)
         {
             // 关闭降落光束
-            landingLight.SetActive(false);
+            if (landingLight)
+                landingLight.SetActive(false);
             // 关闭高亮闪烁
             var ems = titanLightTagFX.emission;
             ems.enabled = false;

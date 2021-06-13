@@ -2349,6 +2349,7 @@ MonoBehaviour:
   - {fileID: 0}
   curPatrolTargetIndex: 0
   curAttackTarget: {fileID: 0}
+  targets: []
 --- !u!82 &3675088100004205231
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2458,7 +2459,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterType: 0
-  team: 1
+  team: 2
   canHitLayerMask:
     serializedVersion: 2
     m_Bits: 0
@@ -2471,6 +2472,7 @@ MonoBehaviour:
     shooter: {fileID: 0}
     target: {fileID: 0}
   damagePoint: {fileID: 4056434344350468116}
+  actorMainCamera: {fileID: 0}
 --- !u!114 &3675088100004205228
 MonoBehaviour:
   m_ObjectHideFlags: 0

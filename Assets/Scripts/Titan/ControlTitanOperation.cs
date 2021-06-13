@@ -94,6 +94,7 @@ public class ControlTitanOperation : Operation
         if (actor.characterType == CharacterType.PLAYER)
         {
             curCamera = actor.actorMainCamera;
+            actor.actorMainCamera.gameObject.SetActive(false);
             lerpCamera.gameObject.SetActive(true);
             lerpCamera.transform.position = curCamera.transform.position;
             lerpCamera.transform.forward = curCamera.transform.forward;

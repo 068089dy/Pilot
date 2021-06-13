@@ -18,10 +18,12 @@ public class EnemyManager : MonoBehaviour
 
     public GameObject robotPrefab;
     public GameObject titanPrefab;
+    TeamManager teamManager;
     // Start is called before the first frame update
     void Start()
     {
         curGenerateState = new GenerateState(0, 0);
+        teamManager = FindObjectOfType<TeamManager>();
         //FindObjectOfType<PlayerCharacterController>()
     }
 
@@ -29,38 +31,67 @@ public class EnemyManager : MonoBehaviour
     void Update()
     {
         if (branchs.Count > 0) {
-            foreach (EnemyBatchMsg branch in branchs)
+            for (int i = 0; i < branchs.Count; i++)
             {
-                // 判断team1成员到centerPoint的距离是否小于triggerRange
-                if (CheckTeam1InRange(branch.centerPoint.position, branch.triggerRange))
+                EnemyBatchMsg branch = branchs[i];
+                if (!branch.active)
                 {
-                    if (branch.enemyMsgs.Length > 0)
+                    // 距离触发
+                    if (branch.triggerType == EnemyTriggerType.RANGE)
                     {
-                        foreach (EnemyMsg enemyMsg in branch.enemyMsgs)
+                        // 判断team1成员到centerPoint的距离是否小于triggerRange
+                        if (CheckTeam1InRange(branch.root.transform.position, branch.triggerRange))
                         {
-                            if (enemyMsg.characterType == CharacterType.ROBOT)
+                            branch.root.SetActive(true);
+                            branch.active = true;
+                        }
+                    } else if(branch.triggerType == EnemyTriggerType.INHERIT) {
+                        bool lastBranchEnemyWipeOut = true;
+                        if (i > 0)
+                        {
+                            // 如果上一波敌人已经激活
+                            if (branchs[i - 1].active)
                             {
-                                foreach (Transform pos in enemyMsg.birthPoints)
+                                Actor[] actors = branchs[i - 1].root.GetComponentsInChildren<Actor>();
+                                if (actors.Length > 0)
                                 {
-                                    GameObject robot = Instantiate(robotPrefab, pos.position, Quaternion.identity);
-                                    robot.GetComponent<EnemyBehaviorController>().patrolPoints.Add(pos);
+                                    //Debug.Log("第" + i + "have human.");
+                                    foreach (Actor a in actors)
+                                    {
+                                        // 如果发现上一批还有活着的敌人
+                                        //Debug.Log("actor列表" + a);
+                                        //Debug.Log("actor health" + a.health);
+                                        if (a && a.health.hp > 0)
+                                        {
+                                            lastBranchEnemyWipeOut = false;
+                                        }
+                                        //lastBranchEnemyWipeOut = false;
+                                    }
                                 }
+                            } else
+                            {
+                                lastBranchEnemyWipeOut = false;
                             }
                         }
+                        if (lastBranchEnemyWipeOut)
+                        {
+                            branch.root.SetActive(true);
+                            branch.active = true;
+                        }
                     }
-                    branchs.Remove(branch);
-                    break;
                 }
+                
+                
             }
         }
     }
 
     bool CheckTeam1InRange(Vector3 center, float range)
     {
-        GameObject[] team1mates = GameObject.FindGameObjectsWithTag("group1");
-        foreach (GameObject tm in team1mates)
+        List<Actor> team1mates = teamManager.team1Actors;
+        foreach (Actor tm in team1mates)
         {
-            if (Vector3.Distance(tm.transform.position, center) <= range)
+            if (tm && Vector3.Distance(tm.transform.position, center) <= range)
             {
                 return true;
             }
@@ -84,19 +115,29 @@ public class EnemyManager : MonoBehaviour
     [Serializable]
     public class EnemyBatchMsg
     {
-        public EnemyMsg[] enemyMsgs;
-        public Transform centerPoint;
+        //public EnemyMsg[] enemyMsgs;
+        public GameObject root;
+        public EnemyTriggerType triggerType = EnemyTriggerType.RANGE;
         // 触发范围（距离中心点多近时生成敌人）
         public float triggerRange = 100;
+        // 是否激活
+        public bool active;
     }
 
-    [Serializable]
-    public class EnemyMsg
+    public enum EnemyTriggerType
     {
-        public CharacterType characterType = CharacterType.ROBOT;
-        public int enemyCount = 10;
-        public Transform[] birthPoints;
+        RANGE,//距离root一定距离时触发
+        INHERIT, //继承消灭上一批次敌人后触发
+        RANGE_AND_INHERIT,
     }
+
+    //[Serializable]
+    //public class EnemyMsg
+    //{
+    //    public CharacterType characterType = CharacterType.ROBOT;
+    //    public int enemyCount = 10;
+    //    public Transform[] birthPoints;
+    //}
 }
 
 

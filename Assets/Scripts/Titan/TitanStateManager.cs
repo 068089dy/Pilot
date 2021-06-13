@@ -28,4 +28,5 @@ public class TitanState
     public static int LANDING = 1;
     public static int AUTO_CONTROL = 2;
     public static int EXITING = 3;
+    public static int DIED = 4;
 }

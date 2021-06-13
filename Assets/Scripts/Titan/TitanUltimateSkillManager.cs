@@ -46,10 +46,15 @@ public class TitanUltimateSkillManager : MonoBehaviour
             }
             if (inputHandler.GetMissileBatchInputDown() && curEnerge >= maxEnerge)
             {
-                //LaunchAction?.Invoke();
-                missileBatch.Launch();
-                curEnerge = 0;
+                LaunchMissileBatch();
             }
         }
+    }
+
+    public void LaunchMissileBatch()
+    {
+        //LaunchAction?.Invoke();
+        missileBatch.Launch();
+        curEnerge = 0;
     }
 }

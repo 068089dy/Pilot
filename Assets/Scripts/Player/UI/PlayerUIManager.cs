@@ -72,7 +72,7 @@ public class PlayerUIManager : MonoBehaviour
     {
         if (killedHint)
         {
-            killedHint.Show();
+            killedHint.Show(damageMsg);
             m_AudioSource.PlayOneShot(killedSFX);
         }
     }

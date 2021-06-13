@@ -53,9 +53,9 @@ public class Attack : Action
         m_EnemyAnimationController.Aim();
 
         
-        if (curObject.GetComponent<Damagable>() != null && curObject.GetComponent<Damagable>().parentActor.damagePoint != null)
+        if (curObject && curObject.damagePoint != null)
         {
-            m_EnemyAnimationController.SetAimIkTarget(curObject.GetComponent<Damagable>().parentActor.damagePoint);
+            m_EnemyAnimationController.SetAimIkTarget(curObject.damagePoint);
         } else
         {
             m_EnemyAnimationController.SetAimIkTarget(curObject.transform);
@@ -104,7 +104,7 @@ public class Attack : Action
     {
         if (curObject != null) {
             //Debug.Log("当前目标" + curObject.name);
-            Vector3 eyePos = transform.position + Vector3.up;
+            Vector3 eyePos = transform.position + Vector3.up * 1.5f;
             if (Physics.Raycast(eyePos, curObject.transform.position + targetCenterOffset - eyePos, out RaycastHit hit, maxAttackDistabce, obstructionLayerMask))
             {
                 if (hit.transform == curObject.transform)

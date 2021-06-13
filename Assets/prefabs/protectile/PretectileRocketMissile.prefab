@@ -102,11 +102,12 @@ MonoBehaviour:
   targetActor: {fileID: 0}
   lifeTime: 100
   rotationSpeed: 0.2
-  centralInjury: 100
+  centralInjury: 500
   explosionRange: 6
   damageLoss: 10
-  ExplosionFXPrefab: {fileID: 1290715649332758, guid: 587eaecaa621be74486f351c78b4f0a8, type: 3}
+  ExplosionFXPrefab: {fileID: 1905092842673754, guid: d39c298570913f54eba27a0d32d2313b, type: 3}
   launchSFX: {fileID: 8300000, guid: 3bc649f38f847974092ec85647f81580, type: 3}
+  delayRotationTime: 0.2
 --- !u!82 &6227626097951418371
 AudioSource:
   m_ObjectHideFlags: 0
@@ -127,7 +128,7 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
-  MinDistance: 1
+  MinDistance: 4
   MaxDistance: 500
   Pan2D: 0
   rolloffMode: 0

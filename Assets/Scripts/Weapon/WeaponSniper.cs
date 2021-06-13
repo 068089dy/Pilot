@@ -43,7 +43,7 @@ public class WeaponSniper : MonoBehaviour
         loadingBar2.fillAmount = loadingProgress;
         if (playerWeaponManager.isAiming)
         {
-            screenMaterial.SetFloat(materialVarBlur, Mathf.Lerp(screenMaterial.GetFloat(materialVarBlur), 0f, Time.deltaTime * 0.5f));
+            screenMaterial.SetFloat(materialVarBlur, Mathf.Lerp(screenMaterial.GetFloat(materialVarBlur), 0f, Time.deltaTime * 1f));
         } else
         {
             //screenMaterial.SetFloat(materialVarBlur, )

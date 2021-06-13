@@ -19,25 +19,33 @@ public class TitanTread : MonoBehaviour
         
     }
 
-    private void OnCollisionEnter(Collision collision)
+    //private void OnTriggerEnter(Collider other)
+    //{
+
+    //}
+
+    private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("踩到了" + collision.gameObject.name);
+        
         if (parentActor)
         {
-            if (collision.gameObject.GetComponent<Damagable>())
+            if (other.gameObject.GetComponent<Damagable>())
             {
-                if (collision.gameObject.GetComponent<Damagable>().parentActor.team != parentActor.team 
-                    && parentActor.characterType == CharacterType.ROBOT)
+                //Debug.Log("踩到了" + other.gameObject.name);
+                if (other.gameObject.GetComponent<Damagable>().parentActor.team != parentActor.team
+                    && other.gameObject.GetComponent<Damagable>().parentActor.characterType == CharacterType.ROBOT)
                 {
+                    Debug.Log("踩到了" + other.gameObject.name);
                     AttackMsg attackMsg = new AttackMsg(
                         damage,
                         parentActor,
                         ProtectileType.TREAD
                         );
-                    DamageMsg damageMsg = collision.gameObject.GetComponent<Damagable>().BeHurt(attackMsg);
+                    DamageMsg damageMsg = other.gameObject.GetComponent<Damagable>().BeHurt(attackMsg);
                     parentActor.damageCounter.AddAmount(damageMsg);
                 }
             }
         }
     }
+    
 }

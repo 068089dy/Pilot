@@ -16,15 +16,17 @@ public class CanSeeObject : Conditional
     public float discoverInterval = 2;
     // …‰œﬂ’⁄µ≤ŒÔ—⁄¬Î
     public LayerMask obstructionLayerMask = -1;
+
+    Vector3 eyePos = Vector3.up * 1.5f;
     public override void OnStart()
     {
-        if (GetComponent<Actor>().team == Team.TEAM1)
-        {
-            targets = GameObject.FindGameObjectsWithTag("group2");
-        } else if (GetComponent<Actor>().team == Team.TEAM2)
-        {
-            targets = GameObject.FindGameObjectsWithTag("group1");
-        }
+        //if (GetComponent<Actor>().team == Team.TEAM1)
+        //{
+        //    targets = GameObject.FindGameObjectsWithTag("group2");
+        //} else if (GetComponent<Actor>().team == Team.TEAM2)
+        //{
+        //    targets = GameObject.FindGameObjectsWithTag("group1");
+        //}
         m_EnemyBehaviorController = GetComponent<EnemyBehaviorController>();
     }
 
@@ -47,7 +49,7 @@ public class CanSeeObject : Conditional
         if (Vector3.Angle(transform.forward, m_EnemyBehaviorController.curAttackTarget.transform.position+Vector3.up - transform.position) < angleLimit)
         {
             //Debug.Log("Ω«∂»∫œ  "+ Vector3.Angle(transform.forward, curObject.transform.position - transform.position));
-            if (Physics.Raycast(transform.position, m_EnemyBehaviorController.curAttackTarget.transform.position + Vector3.up - transform.position, out RaycastHit hit, distanceLimit, obstructionLayerMask)){
+            if (Physics.Raycast(transform.position+eyePos, (m_EnemyBehaviorController.curAttackTarget.transform.position + Vector3.up) - (transform.position+ eyePos), out RaycastHit hit, distanceLimit, obstructionLayerMask)){
                 Debug.DrawLine(transform.position, m_EnemyBehaviorController.curAttackTarget.transform.position + Vector3.up, Color.red);
                 //Debug.Log("≈ˆ◊≤");
                 if (hit.transform == m_EnemyBehaviorController.curAttackTarget.transform)
@@ -67,12 +69,12 @@ public class CanSeeObject : Conditional
     Actor SelectObject()
     {
         Actor target = null;
-        if (targets.Length > 0)
+        if (m_EnemyBehaviorController.targets.Count > 0)
         {
             float minD = distanceLimit;
-            foreach (GameObject ob in targets)
+            foreach (Actor ob in m_EnemyBehaviorController.targets)
             {
-                if (ob.activeInHierarchy && ob.GetComponent<Actor>())
+                if (ob)
                 {
                     if (Vector3.Distance(ob.transform.position, transform.position) < minD)
                     {

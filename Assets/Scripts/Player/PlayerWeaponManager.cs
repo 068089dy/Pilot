@@ -179,6 +179,14 @@ public class PlayerWeaponManager : MonoBehaviour
     //    m_PlayerCharacterController.fpCamera.fieldOfView = 20;
     //    m_PlayerCharacterController.fpCamera.nearClipPlane = 2;
     //}
+    public void DisabelAllWeapon()
+    {
+        curWeaponIndex = -1;
+        foreach (WeaponMsg w in weaponList)
+        {
+            disableWeapon(w);
+        }
+    }
 
     public void setWeapon(int index)
     {

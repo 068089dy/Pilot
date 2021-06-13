@@ -148,19 +148,19 @@ public class PlayerCharacterController : MonoBehaviour
     {
         if (playerStateManager.curState == PlayerState.PLAYER_CONTROL)
         {
+            wasGrounded = isGrounded;
+            isJumped = false;
+            CheckGround();
             if (m_Health.hp > 0)
             {
-
-                wasGrounded = isGrounded;
-                isJumped = false;
-                CheckGround();
                 HandleCharacterMovement();
                 characterController.Move(characterVelocity * Time.deltaTime);
             }
             else
             {
-                HandleCharacterMovement();
-                //FreeMovement();
+                //HandleCharacterMovement();
+                teamManager.UnRegisterActor(actor);
+                FreeMovement();
                 //m_GameFlowManager.GameOver();
             }
         }

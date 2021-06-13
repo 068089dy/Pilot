@@ -45,6 +45,7 @@ public class TitanWeaponRifle : MonoBehaviour
                 }
             } else if (titanStateManager.curState == TitanState.AUTO_CONTROL)
             {
+                Debug.Log("×Ô¶¯¿ØÖÆ");
                 curAimPoint = weaponMuzzle.position + weaponMuzzle.forward;
             }
             //HandleShoot();

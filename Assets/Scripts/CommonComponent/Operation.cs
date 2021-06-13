@@ -19,7 +19,8 @@ public class Operation : MonoBehaviour
     public string hint;
     // 操作类型:1,按下即调用；2,按下一定时长才调用
     [Range(1, 2)]
-    public int type = 1;
+    public int trigerType = 1;
+    public OpreationType type;
     // 类型为2时，需要按下多长时间才调用Opreate
     public float prepareDuration = 1;
     public float curPrepareTime;
@@ -41,4 +42,10 @@ public class Operation : MonoBehaviour
     public virtual void Operate(Actor actor)
     {
     }
+}
+
+public enum OpreationType
+{
+    DRIVE,
+    NORMAL
 }

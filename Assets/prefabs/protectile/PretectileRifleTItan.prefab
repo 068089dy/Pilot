@@ -50,7 +50,7 @@ MonoBehaviour:
   maxLifeTime: 5
   damage: 100
   lastFramePos: {x: 0, y: 0, z: 0}
-  HitFXPrefab: {fileID: 2306767380797635144, guid: 197cc5bffb7491c42935d1644613631f, type: 3}
+  HitFXPrefab: {fileID: 1238872198266200, guid: 615a02d963832fb459625169670b7a0d, type: 3}
   hitFxLifeTime: 1
 --- !u!82 &-7454809055600734499
 AudioSource:
@@ -72,7 +72,7 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
-  MinDistance: 1
+  MinDistance: 4
   MaxDistance: 500
   Pan2D: 0
   rolloffMode: 0

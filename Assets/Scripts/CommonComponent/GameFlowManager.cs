@@ -5,12 +5,12 @@ using UnityEngine;
 public class GameFlowManager : MonoBehaviour
 {
     //PlayerCharacterController m_PlayerCharacterController;
-    public Health playerHealth;
-    public GameObject diedText;
+
+    public Actor playerActor;
     // Start is called before the first frame update
     void Start()
     {
-        diedText.SetActive(false);
+        //diedText.SetActive(false);
     }
 
     // Update is called once per frame
@@ -21,10 +21,12 @@ public class GameFlowManager : MonoBehaviour
 
     public void GameOver()
     {
-        if (diedText != null)
-        {
-            diedText.SetActive(true);
-        }
+
+    }
+
+    public void FinishedGame()
+    {
+
     }
 
     

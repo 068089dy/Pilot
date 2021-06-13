@@ -14,7 +14,7 @@ public class WeaponPanelParentManager : MonoBehaviour
     void Start()
     {
         float startY = -10;
-        float offset = playerWeaponManager.weaponList.Count * 50 + 35;
+        float offset = playerWeaponManager.weaponList.Count * 50 + 25;
         if (playerWeaponManager)
         {
             foreach (WeaponMsg weaponMsg in playerWeaponManager.weaponList)

@@ -45,7 +45,9 @@ public class ProjectileBase : MonoBehaviour
                 AttackMsg attackMsg = new AttackMsg(
                     damage, owner, ProtectileType.RIFLE);
                 DamageMsg damageMsg = hit.transform.gameObject.GetComponent<Damagable>().BeHurt(attackMsg);
-                owner.GetComponent<DamageCounter>().AddAmount(damageMsg);
+                // owner有可能被消灭了
+                if (owner)
+                    owner.GetComponent<DamageCounter>().AddAmount(damageMsg);
                 //if (damageMsg.isKilled)
                 //{
                 //    if (owner.GetComponent<DamageCounter>())

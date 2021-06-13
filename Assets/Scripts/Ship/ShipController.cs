@@ -29,9 +29,12 @@ public class ShipController : MonoBehaviour
 
     // 上一帧血量
     float lastFrameHP;
+
+    UIManager uIManager;
     // Start is called before the first frame update
     void Start()
     {
+        uIManager = FindObjectOfType<UIManager>();
         curState = ShipState.IDLE;
         startHeight = transform.position.y;
         foreach (ParticleSystem p in boosters)
@@ -89,6 +92,7 @@ public class ShipController : MonoBehaviour
             GameObject go = GameObject.Instantiate(explosionFXPrefab, transform.position, Quaternion.identity);
             Destroy(go, 10);
             Destroy(gameObject, 2);
+            uIManager.showBigToast("完成", 5);
             curState = ShipState.DIED;
         } else if (curState == ShipState.DIED)
         {

@@ -109,7 +109,7 @@ public class AutoTitanController : MonoBehaviour
     float verticalSpeed;
     TitanController titanController;
 
-
+    public Actor traceTarget;
     int[] intRandomArray = new int[] { -1, 1 };
     // Start is called before the first frame update
     void Start()
@@ -134,8 +134,6 @@ public class AutoTitanController : MonoBehaviour
         }
         if (titanStateManager.curState == TitanState.AUTO_CONTROL)
         {
-            wasGrounded = isGrounded;
-            CheckGround();
             if (titanController.canFly)
             {
                 titanAnimationController.SetLayerEnable(1);
@@ -143,6 +141,8 @@ public class AutoTitanController : MonoBehaviour
             }
             else
             {
+                wasGrounded = isGrounded;
+                CheckGround();
                 titanAnimationController.SetLayerEnable(0);
                 WalkNPCMovement();
             }
@@ -154,10 +154,12 @@ public class AutoTitanController : MonoBehaviour
     {
         //titanAnimationController.DisableRightHandIK();
         // 如果距离地面20m内，向上，否则向下
-        if (Physics.Raycast(transform.position + Vector3.up, Vector3.down, out RaycastHit hit, 15, groundCheckLayers, QueryTriggerInteraction.Ignore))
+        if (Physics.Raycast(transform.position + Vector3.up*3, Vector3.down, out RaycastHit hit, 25, groundCheckLayers, QueryTriggerInteraction.Ignore))
         {
             Debug.Log(Time.time + "起飞中");
-            transform.Translate(Vector3.up * Time.deltaTime * 5f);
+            
+            //transform.Translate(Vector3.up * Time.deltaTime * 5f);
+            characterController.Move(Vector3.up * Time.deltaTime * 5f);
         } else
         {
             transform.Translate(Vector3.up * Time.deltaTime * Mathf.Sin(Time.time));
@@ -201,7 +203,8 @@ public class AutoTitanController : MonoBehaviour
             // 躲避
             if (lastEludeTime > 0 && Time.time < lastEludeTime + 0.3f)
             {
-                transform.Translate(transform.TransformDirection(eludeDir) * Time.deltaTime * 20);
+                characterController.Move(transform.TransformDirection(eludeDir) * Time.deltaTime * 20f);
+                //transform.Translate(transform.TransformDirection(eludeDir) * Time.deltaTime * 20);
             }
 
             /*
@@ -251,10 +254,23 @@ public class AutoTitanController : MonoBehaviour
                     vec.y = 0;
                     Quaternion rotate = Quaternion.LookRotation(vec);
                     transform.localRotation = Quaternion.Slerp(transform.localRotation, rotate, rotationSpeed);
-                    transform.Translate(transform.forward * Time.deltaTime * maxSpeedOnGround);
-
+                    //transform.Translate(transform.forward * Time.deltaTime * maxSpeedOnGround);
+                    characterController.Move(transform.forward * Time.deltaTime * maxSpeedOnGround);
                 }
                 lastFrameTarget = targetActor;
+            } else
+            {
+                // 如果没有可攻击的目标，找到最近的目标追踪
+                traceTarget = findEnemyXRay();
+                if (traceTarget)
+                {
+                    Vector3 vec = (traceTarget.transform.position - transform.position);
+                    vec.y = 0;
+                    Quaternion rotate = Quaternion.LookRotation(vec);
+                    transform.localRotation = Quaternion.Slerp(transform.localRotation, rotate, rotationSpeed);
+                    //transform.Translate(transform.forward * Time.deltaTime * maxSpeedOnGround);
+                    characterController.Move(transform.forward * Time.deltaTime * maxSpeedOnGround);
+                }
             }
         }
     }
@@ -262,106 +278,135 @@ public class AutoTitanController : MonoBehaviour
     void WalkNPCMovement()
     {
         TryIdle();
-        if (!isGrounded)
-        {
-            characterController.Move(Vector3.down * Time.deltaTime);
-        }
+        //if (!isGrounded)
+        //{
+        //    characterController.Move(Vector3.down * Time.deltaTime);
+        //}
         titanAnimationController.DisableRightHandIK();
         isAimTarget = false;
         //m_PlayerTitanWeaponManager.curWeapon.titanWeaponController.shootAction?.Invoke();
+        if (isGrounded)
+        {
 
-        /* 如果遭受攻击，选择目标为攻击者(需要记录一下上次转换目标的时间)
-         * 否则寻找视野内最近的敌人作为目标
-         */
-        // 闪避加速
-        Vector3 targetVelocity = Vector3.zero;
-        if (lastEludeTime != 0 && Time.time < lastEludeTime + 1f)
-        {
-            targetVelocity = 10f * transform.TransformDirection(eludeDir);
-            TryWalk();
-        }
-        characterVelocity = Vector3.Lerp(characterVelocity, targetVelocity, movementSharpnessOnGround * Time.deltaTime);
-        //Debug.Log("最后一次攻击者" + actor.lastDamageMsg.shooter.name);
-        if (actor.lastBeHurtTime >= 0 
-            && Time.time < actor.lastBeHurtTime + 5f
-            && actor.lastDamageMsg.shooter
-            && actor.lastDamageMsg.shooter.gameObject.activeInHierarchy)
-        {
-            // 
-            if (actor.lastDamageMsg.shooter != targetActor && Time.time > lastChangeTargetTime + 2f)
+            if (!wasGrounded)
             {
-                targetActor = actor.lastDamageMsg.shooter;
-                lastChangeTargetTime = Time.time;
-            }
-            // 上次躲避时间
-            if (Time.time > lastEludeTime + eludeDuration)
-            {
-                //characterController.Move(transform.right * Time.deltaTime * maxSpeedOnGround * 10f);
-                lastEludeTime = Time.time;
-                // 闪躲方向(左/右)
-                eludeDir = Vector3.right * intRandomArray[Random.Range(0, 2)];
-            }
-            
-        } else
-        {
-            targetActor = findEnemy();
-        }
-
-        /*
-          如果攻击范围内搜索到有敌人
-            如果敌人在前方并且和目标的水平角度小于5度：
-                攻击
-            否则
-                转向敌人
-          否则如果搜索范围内有敌人
-            向敌人移动
-            */
-        
-        if (targetActor)
-        {
-            // 如果在攻击范围内
-            if (Vector3.Distance(targetActor.transform.position, transform.position) < distanceAttack)
-            {
-                //Debug.Log(Time.time + gameObject.name + "搜索到敌人" + targetActor.name);
-                Vector3 vDir = targetActor.transform.position + Vector3.up - transform.position;
-                vDir.y = 0;
-                if (Vector3.Angle(transform.forward, vDir) < shootAngleLimit)
+                if (characterVelocity.y < -30)
                 {
-                    lastSeeTime = Time.time;
-                    // 动画
-                    //titanAnimationController.Shoot();
-                    isAimTarget = true;
-                    // 设置ik
-                    titanAnimationController.SetRightHandIk(targetActor.transform);
-                    // 射击
-                    m_PlayerTitanWeaponManager.curWeapon.titanWeaponController.shootAction?.Invoke();
+                    // 下落速度过快时
+                    m_AudioSource.PlayOneShot(landSFX);
                 }
+            }
+            /* 如果遭受攻击，选择目标为攻击者(需要记录一下上次转换目标的时间)
+             * 否则寻找视野内最近的敌人作为目标
+             */
+            // 闪避加速
+            Vector3 targetVelocity = Vector3.zero;
+            if (lastEludeTime != 0 && Time.time < lastEludeTime + 1f)
+            {
+                targetVelocity = 10f * transform.TransformDirection(eludeDir);
+                TryWalk();
+            }
+            characterVelocity = Vector3.Lerp(characterVelocity, targetVelocity, movementSharpnessOnGround * Time.deltaTime);
+            //Debug.Log("最后一次攻击者" + actor.lastDamageMsg.shooter.name);
+            if (actor.lastBeHurtTime >= 0
+                && Time.time < actor.lastBeHurtTime + 5f
+                && actor.lastDamageMsg.shooter
+                && actor.lastDamageMsg.shooter.gameObject.activeInHierarchy)
+            {
+                // 
+                if (actor.lastDamageMsg.shooter != targetActor && Time.time > lastChangeTargetTime + 2f)
+                {
+                    targetActor = actor.lastDamageMsg.shooter;
+                    lastChangeTargetTime = Time.time;
+                }
+                // 上次躲避时间
+                if (Time.time > lastEludeTime + eludeDuration)
+                {
+                    //characterController.Move(transform.right * Time.deltaTime * maxSpeedOnGround * 10f);
+                    lastEludeTime = Time.time;
+                    // 闪躲方向(左/右)
+                    eludeDir = Vector3.right * intRandomArray[Random.Range(0, 2)];
+                }
+
+            }
+            else
+            {
+                targetActor = findEnemy();
+            }
+
+            /*
+              如果攻击范围内搜索到有敌人
+                如果敌人在前方并且和目标的水平角度小于5度：
+                    攻击
+                否则
+                    转向敌人
+              否则如果搜索范围内有敌人
+                向敌人移动
+                */
+
+            if (targetActor)
+            {
+                // 如果在攻击范围内
+                if (Vector3.Distance(targetActor.transform.position, transform.position) < distanceAttack)
+                {
+                    //Debug.Log(Time.time + gameObject.name + "搜索到敌人" + targetActor.name);
+                    Vector3 vDir = targetActor.transform.position + Vector3.up - transform.position;
+                    vDir.y = 0;
+                    if (Vector3.Angle(transform.forward, vDir) < shootAngleLimit)
+                    {
+                        lastSeeTime = Time.time;
+                        // 动画
+                        //titanAnimationController.Shoot();
+                        isAimTarget = true;
+                        // 设置ik
+                        titanAnimationController.SetRightHandIk(targetActor.transform);
+                        // 射击
+                        m_PlayerTitanWeaponManager.curWeapon.titanWeaponController.shootAction?.Invoke();
+                    }
+                    else
+                    {
+                        titanAnimationController.DisableLeftHandIK();
+                        //Debug.Log(gameObject.name + "角度不合适" + Vector3.Angle(transform.forward, vDir));
+                        Vector3 vec = (targetActor.transform.position - transform.position);
+                        vec.y = 0;
+                        Quaternion rotate = Quaternion.LookRotation(vec);
+                        transform.localRotation = Quaternion.Slerp(transform.localRotation, rotate, rotationSpeed);
+                        TryWalk();
+                    }
+                }
+                // 如果不在攻击范围内，跑向目标
                 else
                 {
-                    titanAnimationController.DisableLeftHandIK();
+                    //titanAnimationController.DisableLeftHandIK();
                     //Debug.Log(gameObject.name + "角度不合适" + Vector3.Angle(transform.forward, vDir));
                     Vector3 vec = (targetActor.transform.position - transform.position);
                     vec.y = 0;
                     Quaternion rotate = Quaternion.LookRotation(vec);
                     transform.localRotation = Quaternion.Slerp(transform.localRotation, rotate, rotationSpeed);
                     TryWalk();
+                    characterVelocity += transform.forward * maxSpeedOnGround;
+
                 }
+                lastFrameTarget = targetActor;
             }
-            // 如果不在攻击范围内，跑向目标
-            else {
-                //titanAnimationController.DisableLeftHandIK();
-                //Debug.Log(gameObject.name + "角度不合适" + Vector3.Angle(transform.forward, vDir));
-                Vector3 vec = (targetActor.transform.position - transform.position);
-                vec.y = 0;
-                Quaternion rotate = Quaternion.LookRotation(vec);
-                transform.localRotation = Quaternion.Slerp(transform.localRotation, rotate, rotationSpeed);
-                TryWalk();
-                characterVelocity += transform.forward * maxSpeedOnGround;
-                
+            characterController.Move(characterVelocity * Time.deltaTime);
+        } else
+        {
+            if (characterController.velocity.sqrMagnitude < characterVelocity.sqrMagnitude)
+            {
+                characterVelocity = characterController.velocity;
             }
-            lastFrameTarget = targetActor;
+            if (characterController.velocity.y < -30)
+            {
+                // 下落速度过快时
+                titanAnimationController.Air();
+            }
+            //characterVelocity += worldspaceMoveInput * accelerationSpeedInAir * Time.deltaTime;
+            float verticalVelocity = characterVelocity.y;
+            Vector3 horizontalVelocity = Vector3.ProjectOnPlane(characterVelocity, Vector3.up);
+            characterVelocity = horizontalVelocity + (Vector3.up * verticalVelocity);
+            characterVelocity += Vector3.down * gravityDownForce * Time.deltaTime;
         }
-        characterController.Move(characterVelocity * Time.deltaTime);
     }
 
     public void TryIdle()
@@ -420,7 +465,7 @@ public class AutoTitanController : MonoBehaviour
             float minD = distanceLimit;
             foreach (Actor ob in targets)
             {
-                if (ob.gameObject.activeInHierarchy)
+                if (ob)
                 {
                     if (Vector3.Distance(ob.transform.position, transform.position) < minD)
                     {
@@ -438,6 +483,55 @@ public class AutoTitanController : MonoBehaviour
                                 target = ob;
                             }
                         }
+
+                    }
+                }
+            }
+        }
+        return target;
+    }
+
+    Actor findEnemyXRay()
+    {
+        if (!teamManager)
+        {
+            return null;
+        }
+        List<Actor> targets = null;
+        if (actor.team == Team.TEAM1)
+        {
+            targets = teamManager.team2Actors;
+        }
+        else if (actor.team == Team.TEAM2)
+        {
+            targets = teamManager.team1Actors;
+        }
+        Actor target = null;
+        if (targets.Count > 0)
+        {
+            float minD = distanceLimit;
+            foreach (Actor ob in targets)
+            {
+                if (ob)
+                {
+                    if (Vector3.Distance(ob.transform.position, transform.position) < minD)
+                    {
+                        target = ob;
+                        minD = Vector3.Distance(ob.transform.position, transform.position);
+                        //Vector3 targetPos = ob.transform.position;
+                        //if (ob.damagePoint)
+                        //{
+                        //    targetPos = ob.damagePoint.position;
+                        //}
+                        //if (Physics.Raycast(transform.position, targetPos - transform.position, out RaycastHit hit, distanceLimit, actor.canHitLayerMask))
+                        //{
+                        //    if (hit.transform.gameObject.GetComponent<Damagable>() &&
+                        //        hit.transform.gameObject.GetComponent<Damagable>().parentActor == ob)
+                        //    {
+                        //        minD = Vector3.Distance(ob.transform.position, transform.position);
+                        //        target = ob;
+                        //    }
+                        //}
 
                     }
                 }

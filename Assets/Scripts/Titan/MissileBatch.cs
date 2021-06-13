@@ -61,7 +61,9 @@ public class MissileBatch : MonoBehaviour
         TitanBulletRocket curTitanBulletRocket = Instantiate(bulletRocketPrefab, muzzle);
         curTitanBulletRocket.transform.SetParent(null, true);
         curTitanBulletRocket.layerMask = actor.canHitLayerMask;
-        curTitanBulletRocket.targetActor = missileLockSystem.curTarget;
+        // 随机分配目标
+        if (missileLockSystem.targetCollection.Count > 0)
+            curTitanBulletRocket.targetActor = missileLockSystem.targetCollection[Random.Range(0, missileLockSystem.targetCollection.Count)].target;
         curTitanBulletRocket.owner = actor;
         curTitanBulletRocket.targetPos = targetPos;
         curTitanBulletRocket.Launch();

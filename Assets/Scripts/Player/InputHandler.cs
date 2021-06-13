@@ -10,11 +10,14 @@ public class InputHandler : MonoBehaviour
     bool m_FireInputWasHeld;
     bool m_OperateInputWasHeld;
 
+    UIManager uIManager;
+
     public void Start()
     {
         //Screen.fullScreen = true;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        uIManager = FindObjectOfType<UIManager>();
     }
 
     public void Update()
@@ -25,17 +28,23 @@ public class InputHandler : MonoBehaviour
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
+                if (uIManager)
+                    uIManager.hideESCPanel();
             } else
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
+                if (uIManager)
+                    uIManager.showESCPanel();
             }
         }
-
-        if (Cursor.lockState == CursorLockMode.None && Input.GetMouseButton(0))
+        if (!uIManager.isActiveAndEnabled)
         {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            if (Cursor.lockState == CursorLockMode.None && Input.GetMouseButton(0))
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
         }
     }
 

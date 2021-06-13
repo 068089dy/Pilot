@@ -55,7 +55,13 @@ public class WalkPatrol : Action
             {
                 m_EnemyBehaviorController.curPatrolTargetIndex++;
             }
-            target2D = new Vector2(patrolPoints[m_EnemyBehaviorController.curPatrolTargetIndex].position.x, patrolPoints[m_EnemyBehaviorController.curPatrolTargetIndex].position.z);
+            if (patrolPoints.Count > 0)
+            {
+                target2D = new Vector2(patrolPoints[m_EnemyBehaviorController.curPatrolTargetIndex].position.x, patrolPoints[m_EnemyBehaviorController.curPatrolTargetIndex].position.z);
+            } else
+            {
+                return TaskStatus.Failure;
+            }
         }
 
         // ×ªÏò

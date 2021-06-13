@@ -37,6 +37,7 @@ public class BulletLaserCore : MonoBehaviour
     public bool isLaunching;
 
     TitanUltimateSkillManager titanUltimateSkillManager;
+    public DamageCounter damageCounter;
 
     // Start is called before the first frame update
     void Start()
@@ -112,7 +113,8 @@ public class BulletLaserCore : MonoBehaviour
                         {
                             Debug.Log("…À∫¶");
                             AttackMsg attackMsg = new AttackMsg(damage * Time.deltaTime, owner, ProtectileType.LASER);
-                            hit.transform.GetComponent<Damagable>().BeHurt(attackMsg);
+                            DamageMsg damageMsg = hit.transform.GetComponent<Damagable>().BeHurt(attackMsg);
+                            damageCounter.AddAmount(damageMsg);
                         }
                     } else
                     {
